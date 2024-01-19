@@ -20,14 +20,6 @@ from typing import Type
 import os
 from dotenv import load_dotenv
 
-import openai
-import requests
-
-from typing import Type
-
-import os
-from dotenv import load_dotenv
-
 try:
     from .PromptInputs import *
 except ImportError:
@@ -100,15 +92,12 @@ class LLMWithCandidateLabels(HuggingfaceLLMCaller):
 
 class OpenAILLM(LLMCaller):
     def __init__(self):
-        self.update_api_key_from_env_file()
         self.temperature = 0.5
         self.max_tokens = 300
 
-    def update_api_key_from_env_file(self):
+    def get_JSON_output_from_API_call(self, prompt_input: Type[PromptInput]):
         load_dotenv()
         openai.api_key = os.environ.get("OPENAI_API_KEY")
-
-    def get_JSON_output_from_API_call(self, prompt_input: Type[PromptInput]):
 
         prompt = self.get_prompt_input(prompt_input=prompt_input)
         
