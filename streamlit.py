@@ -1,5 +1,6 @@
 import streamlit as st
 from evaluation import evaluation_function
+from GoogleSheetsWriter import GoogleSheetsWriter
 
 with st.form('risk_assessment'):
     activity = st.text_input('Activity', value='Fluids laboratory')
@@ -26,4 +27,18 @@ with st.form('risk_assessment'):
             result = evaluation_function(response=response, answer='', params='')
 
             st.write(result)
+            if 'feedback' not in st.session_state:
+                st.session_state.feedback = result['feedback']
             # st.write(result)
+
+with st.form('feedback_from_user'):
+    name = st.text_input('Name', value='Charlie Lindsay')
+    submit_button = st.form_submit_button("Submit")
+    google_sheets_writer = GoogleSheetsWriter(sheet_name='Sheet1')
+
+    if submit_button:
+        if 'feedback' in st.session_state:
+            google_sheets_writer.write_to_sheets(new_line_data=[name, st.session_state.feedback])
+            st.write('Thank you for your feedback!')
+        else:
+            st.write('Please submit a risk assessment first')
