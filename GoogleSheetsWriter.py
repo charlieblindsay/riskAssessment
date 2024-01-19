@@ -1,4 +1,4 @@
-from google.oauth2 import service_account
+from google_auth_oauthlib.flow import InstalledAppFlow
 import gspread
 
 class GoogleSheetsWriter:
@@ -7,10 +7,13 @@ class GoogleSheetsWriter:
         self.spreadsheet_id = spreadsheet_id
 
         scopes = ['https://www.googleapis.com/auth/spreadsheets']
-        credentials = service_account.Credentials.from_service_account_file(
-            secrets, scopes=scopes
+        
+        flow = InstalledAppFlow.from_client_config(
+            secrets,
+            scopes=['https://www.googleapis.com/auth/spreadsheets']
         )
-
+    
+        credentials = flow.run_local_server()
         self.client=gspread.authorize(credentials)
         
 
