@@ -1,4 +1,4 @@
-name: Test & Deploy Evaluation Function to AWS Lambda
+name: Set environment variables
 
 on:
   push:
