@@ -34,7 +34,9 @@ with st.form('risk_assessment'):
 with st.form('feedback_from_user'):
     name = st.text_input('Name', value='Charlie Lindsay')
     submit_button = st.form_submit_button("Submit")
-    google_sheets_writer = GoogleSheetsWriter(sheet_name='Sheet1')
+    google_sheets_writer = GoogleSheetsWriter(sheet_name='Sheet1',
+                                              spreadsheet_id=st.secrets['SPREADSHEET_ID'],
+                                              secrets=st.secrets['gcp_service_account'])
 
     if submit_button:
         if 'feedback' in st.session_state:
