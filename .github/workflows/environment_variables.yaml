@@ -8,7 +8,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  env:
-    SCHEMAS_URL: https://raw.githubusercontent.com/lambda-feedback/request-response-schemas/master/
-    HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
-    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  job:
+    env:
+      SCHEMAS_URL: https://raw.githubusercontent.com/lambda-feedback/request-response-schemas/master/
+      HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
