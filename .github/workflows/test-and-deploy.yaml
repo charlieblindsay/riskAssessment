@@ -1,0 +1,14 @@
+name: Test & Deploy Evaluation Function to AWS Lambda
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+jobs:
+  env:
+    SCHEMAS_URL: https://raw.githubusercontent.com/lambda-feedback/request-response-schemas/master/
+    HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
