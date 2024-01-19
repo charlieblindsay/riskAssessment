@@ -17,7 +17,7 @@ class GoogleSheetsWriter:
         # self.client=gspread.authorize(credentials)
 
         self.credentials_path = 'google_api_credentials.json'
-        self.spreadsheet_id = '1d7Tq7qEaNTrhm1E7qcGvl3Dkr8cFNdSpOul9RezjVs4'
+        self.spreadsheet_id = '1O6ztnca_NPC0TXxmSTrw5xV51vUow0I8nAebEsEntbQ'
 
         scopes = ['https://www.googleapis.com/auth/spreadsheets']
         credentials = service_account.Credentials.from_service_account_file(
