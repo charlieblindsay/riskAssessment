@@ -50,7 +50,7 @@ class HuggingfaceLLMCaller(LLMCaller):
     
     def update_api_key_from_env_file(self):
         load_dotenv()
-        self.HUGGINGFACE_API_KEY = os.environ.get("HUGGINGFACE_API_KEY")
+        self.HUGGINGFACE_API_KEY = st.secrets("HUGGINGFACE_API_KEY")
 
 class LLMWithGeneratedText(HuggingfaceLLMCaller):
     def __init__(self, LLM_API_ENDPOINT):
@@ -92,12 +92,15 @@ class LLMWithCandidateLabels(HuggingfaceLLMCaller):
 
 class OpenAILLM(LLMCaller):
     def __init__(self):
+        self.update_api_key_from_env_file()
         self.temperature = 0.5
         self.max_tokens = 300
 
-    def get_JSON_output_from_API_call(self, prompt_input: Type[PromptInput]):
+    def update_api_key_from_env_file(self):
         load_dotenv()
-        openai.api_key = os.getenv("OPENAI_API_KEY")
+        openai.api_key = st.secrets("OPENAI_API_KEY")
+
+    def get_JSON_output_from_API_call(self, prompt_input: Type[PromptInput]):
 
         prompt = self.get_prompt_input(prompt_input=prompt_input)
         
