@@ -6,7 +6,7 @@ class GoogleSheetsWriter:
         self.credentials_path = 'google_api_credentials.json'
         self.spreadsheet_id = spreadsheet_id
 
-        scopes = ['https://www.googleapis.com/auth/spreadsheets']
+        scopes = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
         credentials = service_account.Credentials.from_service_account_file(
             secrets, scopes=scopes
         )
