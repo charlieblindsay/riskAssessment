@@ -140,8 +140,16 @@ class Params(TypedDict):
     pass
 
 class Result(TypedDict):
-    is_correct: bool
-    feedback: str
+    question_titles: list
+    question: str
+    prompts: list
+    prompt_outputs: list
+    regex_matches: list
+    shortform_feedbacks: list
+    is_everything_correct: bool
+    booleans_indicating_which_prompts_need_feedback: list
+    controlled_risk: str
+    uncontrolled_risk: str
 
 def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
     """
@@ -189,22 +197,16 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
         shortform_feedbacks = RA.get_list_of_shortform_feedback_from_regex_matches(regex_matches)
         is_everything_correct = RA.are_all_prompt_outputs_correct(prompt_outputs) and RA.are_all_multiplications_correct()
         booleans_indicating_which_prompts_need_feedback = RA.get_booleans_indicating_which_prompts_need_feedback(regex_matches)
+        controlled_risk = RA.check_controlled_risk()
+        uncontrolled_risk = RA.check_uncontrolled_risk()
 
-        feedback = f'''
-        ------ FEEDBACK ------\n\n
-        '''
-
-        for i in range(len(prompts)):
-            question_title = question_titles[i]
-            prompt_output = prompt_outputs[i]
-            shortform_feedback = shortform_feedbacks[i]
-
-            feedback += f'--- Q{i + 1}: {question_title} ---\n\n'
-            feedback += f'Feedback {i + 1}: {shortform_feedback}\n\n'
-            if booleans_indicating_which_prompts_need_feedback[i] == True:
-                feedback += f'Explanation {i + 1}: {prompt_output}\n\n\n'
-
-        feedback += f'--- Controlled risk multiplication is: {RA.check_controlled_risk()} ---\n\n'
-        feedback += f'--- Uncontrolled risk multiplication is: {RA.check_uncontrolled_risk()} ---\n\n'
-
-        return Result(is_correct=is_everything_correct, feedback=feedback)
+        return Result(question_titles=question_titles, 
+                      question=questions, 
+                      prompts=prompts, 
+                      prompt_outputs=prompt_outputs, 
+                      regex_matches=regex_matches, 
+                      shortform_feedbacks=shortform_feedbacks, 
+                      is_everything_correct=is_everything_correct, 
+                      booleans_indicating_which_prompts_need_feedback=booleans_indicating_which_prompts_need_feedback,
+                      controlled_risk=controlled_risk,
+                      uncontrolled_risk=uncontrolled_risk)
