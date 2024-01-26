@@ -255,7 +255,7 @@ with st.expander('See Additional Instructions'):
     st.markdown('''
                 1. Read through the helpful resources below.
                 2. Using what you have learnt, fill out the Risk Assessment fields. NOTE: You should only include one example in each field, e.g. for the 'Prevention' field, only list one prevention.
-                3. Your answers will then be processed (which takes around 10 seconds).
+                3. Click submit. Your answers will then be processed (which takes around 10 seconds).
                 4. Afterwards, feedback will be given. You should use the feedback to improve your answers.
                 5. Once you have gotten everything correct, you can give feedback to me by filling out the feedback form at the bottom. Many Thanks, Charlie''')
     
