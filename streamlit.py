@@ -458,14 +458,13 @@ with st.expander('Please fill out this form so I can improve the Exercise!'):
         # slider_options = ['Strongly Disagree', 'Disagree', 'On the fence', 'Agree', 'Strongly Agree']
         options = ['Yes', 'No']
         name = st.text_input('First Name')
-        st.write('Do you think the feedback received in this exercise is: ')
-        is_feedback_correct = st.radio('i) correct?', options=options)
+        is_feedback_correct = st.radio('i) Is the feedback you received correct?', options=options)
         why_not_correct = st.text_input('If you answered No, why is the feedback incorrect?')
-        is_feedback_specific  = st.radio('ii) specific, i.e. tailored specifically to the answers you gave?', options=options)
+        is_feedback_specific  = st.radio('ii) Is the feedback you received specific, i.e. tailored specifically to the answers you gave?', options=options)
         why_not_specific = st.text_input('If you answered No, why is the feedback not specific?')
-        is_feedback_constructive = st.radio('iii) constructive, i.e. helped you understand why an answer was wrong and made helpful suggestions on how to improve your answer.', options=options)
+        is_feedback_constructive = st.radio('iii) Is the feedback you received constructive, i.e. helped you understand why an answer was wrong and made helpful suggestions on how to improve your answer.', options=options)
         why_not_constructive = st.text_input('If you answered No, why is the feedback not constructive?')
-        is_feedback_concise = st.radio('iv) concise?', options=options)
+        is_feedback_concise = st.radio('iv) Is the feedback you received concise?', options=options)
         why_not_concise = st.text_input('If you answered No, why is the feedback not concise?')
         are_instructions_clear = st.radio('Do you think the instructions given for this exercise were clear?', options=options)
         why_not_clear = st.text_input('If you answered No, why are the instructions not clear?')
