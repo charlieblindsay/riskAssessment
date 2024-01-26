@@ -24,14 +24,6 @@ from typing import Type
 import os
 from dotenv import load_dotenv
 
-import openai
-import requests
-
-from typing import Type
-
-import os
-from dotenv import load_dotenv
-
 try:
     from .PromptInputs import *
 except ImportError:
@@ -317,18 +309,32 @@ with st.expander('Click to see Example Risk Assessment'):
 
 st.title('Risk Assessment Fields')
 with st.form('risk_assessment'):
-    activity = st.text_input('Activity', value='Fluids laboratory')
-    hazard = st.text_input('Hazard', value="Ink spillage")
-    how_it_harms = st.text_input('How does the hazard cause harm?', value="Serious eye damage")
-    who_it_harms = st.text_input('Who does the hazard harm?', value="Students")
-    uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood', value='2')
-    uncontrolled_severity = st.text_input('Uncontrolled Severity', value='2')
-    uncontrolled_risk = st.text_input('Uncontrolled Risk', value='4')
-    prevention = st.text_input('Prevention', value="Wear safety glasses")
-    mitigation = st.text_input('Mitigation', value="Wash eyes with water")
-    controlled_likelihood = st.text_input('Controlled Likelihood', value='1')
-    controlled_severity = st.text_input('Controlled Severity', value='1')
-    controlled_risk = st.text_input('Controlled Risk', value='1')
+    # activity = st.text_input('Activity', value='Fluids laboratory')
+    # hazard = st.text_input('Hazard', value="Ink spillage")
+    # how_it_harms = st.text_input('How does the hazard cause harm?', value="Serious eye damage")
+    # who_it_harms = st.text_input('Who does the hazard harm?', value="Students")
+    # uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood', value='2')
+    # uncontrolled_severity = st.text_input('Uncontrolled Severity', value='2')
+    # uncontrolled_risk = st.text_input('Uncontrolled Risk', value='4')
+    # prevention = st.text_input('Prevention', value="Wear safety glasses")
+    # mitigation = st.text_input('Mitigation', value="Wash eyes with water")
+    # controlled_likelihood = st.text_input('Controlled Likelihood', value='1')
+    # controlled_severity = st.text_input('Controlled Severity', value='1')
+    # controlled_risk = st.text_input('Controlled Risk', value='1')
+    # submit_button = st.form_submit_button("Submit")
+
+    activity = st.text_input('Activity')
+    hazard = st.text_input('Hazard')
+    how_it_harms = st.text_input('How does the hazard cause harm?')
+    who_it_harms = st.text_input('Who does the hazard harm?')
+    uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood') 
+    uncontrolled_severity = st.text_input('Uncontrolled Severity')
+    uncontrolled_risk = st.text_input('Uncontrolled Risk') 
+    prevention = st.text_input('Prevention')
+    mitigation = st.text_input('Mitigation')
+    controlled_likelihood = st.text_input('Controlled Likelihood') 
+    controlled_severity = st.text_input('Controlled Severity')
+    controlled_risk = st.text_input('Controlled Risk')
     submit_button = st.form_submit_button("Submit")
 
     # TODO: Add try except for when they are not connected to the internet.
@@ -476,6 +482,7 @@ with st.expander('Please fill out this form so I can improve the Exercise!'):
         if submit_button:
             if 'feedback' in st.session_state:
                 google_sheets_writer.write_to_sheets(new_line_data=[
+                    name,
                     '\n\n\n'.join(st.session_state.feedback),
                     is_feedback_correct,
                     why_not_correct,

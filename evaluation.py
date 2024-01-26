@@ -22,14 +22,6 @@ from typing import Type
 import os
 from dotenv import load_dotenv
 
-import openai
-import requests
-
-from typing import Type
-
-import os
-from dotenv import load_dotenv
-
 try:
     from .PromptInputs import *
 except ImportError:
