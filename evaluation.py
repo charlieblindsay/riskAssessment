@@ -242,16 +242,3 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
                         booleans_indicating_which_prompts_need_feedback=booleans_indicating_which_prompts_need_feedback,
                         controlled_risk=controlled_risk,
                         uncontrolled_risk=uncontrolled_risk)
-    else:
-        return Result(input_check_feedback_message=input_check_feedback_message,
-                    question_titles=[], 
-                        question='', 
-                        prompt_input_objects=[],
-                        prompts=[], 
-                        prompt_outputs=[], 
-                        regex_matches=[], 
-                        shortform_feedbacks=[], 
-                        is_everything_correct=False, 
-                        booleans_indicating_which_prompts_need_feedback=[],
-                        controlled_risk='',
-                        uncontrolled_risk='')
