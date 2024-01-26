@@ -140,6 +140,7 @@ class Params(TypedDict):
     pass
 
 class Result(TypedDict):
+    input_check_feedback_message: str
     question_titles: list
     question: str
     prompt_input_objects: list
@@ -184,12 +185,40 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
                         controlled_likelihood=controlled_likelihood, controlled_severity=controlled_severity, controlled_risk=controlled_risk,
                         prevention_prompt_expected_output='prevention', mitigation_prompt_expected_output='mitigation')
     
-    if RA.get_input_check_feedback_message() != '':
-        return Result(is_correct=False, feedback= RA.get_input_check_feedback_message())
-    
-    else:
-        LLM = OpenAILLM()
+    input_check_feedback_message = RA.get_input_check_feedback_message()
+    controlled_risk = RA.check_controlled_risk()
+    uncontrolled_risk = RA.check_uncontrolled_risk()
 
+    if input_check_feedback_message != '':
+        return Result(input_check_feedback_message=input_check_feedback_message,
+                    question_titles=[], 
+                        question='', 
+                        prompt_input_objects=[],
+                        prompts=[], 
+                        prompt_outputs=[], 
+                        regex_matches=[], 
+                        shortform_feedbacks=[], 
+                        is_everything_correct=False, 
+                        booleans_indicating_which_prompts_need_feedback=[],
+                        controlled_risk='',
+                        uncontrolled_risk='')
+
+    if input_check_feedback_message == '' and controlled_risk != 'correct' or uncontrolled_risk != 'correct':
+        return Result(input_check_feedback_message=input_check_feedback_message,
+                    question_titles=[], 
+                        question='', 
+                        prompt_input_objects=[],
+                        prompts=[], 
+                        prompt_outputs=[], 
+                        regex_matches=[], 
+                        shortform_feedbacks=[], 
+                        is_everything_correct=False, 
+                        booleans_indicating_which_prompts_need_feedback=[],
+                        controlled_risk=controlled_risk,
+                        uncontrolled_risk=uncontrolled_risk)
+    
+    if input_check_feedback_message == '' and controlled_risk == 'correct' and uncontrolled_risk == 'correct':
+        LLM = OpenAILLM()
         question_titles = RA.get_list_of_question_titles()
         questions = RA.get_list_of_questions()
         prompt_input_objects = RA.get_list_of_prompt_input_objects()
@@ -199,17 +228,30 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
         shortform_feedbacks = RA.get_list_of_shortform_feedback_from_regex_matches(regex_matches)
         is_everything_correct = RA.are_all_prompt_outputs_correct(prompt_outputs) and RA.are_all_multiplications_correct()
         booleans_indicating_which_prompts_need_feedback = RA.get_booleans_indicating_which_prompts_need_feedback(regex_matches)
-        controlled_risk = RA.check_controlled_risk()
-        uncontrolled_risk = RA.check_uncontrolled_risk()
 
-        return Result(question_titles=question_titles, 
-                      question=questions, 
-                      prompt_input_objects=prompt_input_objects,
-                      prompts=prompts, 
-                      prompt_outputs=prompt_outputs, 
-                      regex_matches=regex_matches, 
-                      shortform_feedbacks=shortform_feedbacks, 
-                      is_everything_correct=is_everything_correct, 
-                      booleans_indicating_which_prompts_need_feedback=booleans_indicating_which_prompts_need_feedback,
-                      controlled_risk=controlled_risk,
-                      uncontrolled_risk=uncontrolled_risk)
+        
+        return Result(input_check_feedback_message=input_check_feedback_message,
+                    question_titles=question_titles, 
+                        question=questions, 
+                        prompt_input_objects=prompt_input_objects,
+                        prompts=prompts, 
+                        prompt_outputs=prompt_outputs, 
+                        regex_matches=regex_matches, 
+                        shortform_feedbacks=shortform_feedbacks, 
+                        is_everything_correct=is_everything_correct, 
+                        booleans_indicating_which_prompts_need_feedback=booleans_indicating_which_prompts_need_feedback,
+                        controlled_risk=controlled_risk,
+                        uncontrolled_risk=uncontrolled_risk)
+    else:
+        return Result(input_check_feedback_message=input_check_feedback_message,
+                    question_titles=[], 
+                        question='', 
+                        prompt_input_objects=[],
+                        prompts=[], 
+                        prompt_outputs=[], 
+                        regex_matches=[], 
+                        shortform_feedbacks=[], 
+                        is_everything_correct=False, 
+                        booleans_indicating_which_prompts_need_feedback=[],
+                        controlled_risk='',
+                        uncontrolled_risk='')

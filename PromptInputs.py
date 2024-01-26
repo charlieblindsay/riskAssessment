@@ -11,7 +11,7 @@ class PromptInput:
         self.activity_definition = """an action or process that involves
         physical or mental effort."""
 
-        self.hazard_definition = """a dangerous phenomenon, substance, human activity or condition. 
+        self.hazard_definition = """a dangerous phenomenon, object, human activity or condition. 
         It may cause loss of life, injury or other health impacts, property damage, loss of livelihoods 
         and services, social and economic disruption, or environmental damage."""
 
@@ -32,7 +32,7 @@ class PromptInput:
         or reduces the harm caused by the hazard after it has occurred.''' 
 
         self.pattern_matching_method = 'check_string_for_true_or_false'
-        self.correct_matched_pattern = True
+        self.correct_matched_patterns = [True]
 
     def get_question(self):
         pass
@@ -210,7 +210,7 @@ class Prevention(PromptInput):
         self.who_it_harms = who_it_harms
 
         self.pattern_matching_method = 'check_string_for_prevention_mitigation_or_neither'
-        self.correct_matched_pattern = 'prevention'
+        self.correct_matched_patterns = ['prevention', 'both']
 
     def get_question_title(self):
         return 'Prevention'
@@ -342,7 +342,7 @@ class Mitigation(PromptInput):
         self.who_it_harms = who_it_harms
 
         self.pattern_matching_method = 'check_string_for_prevention_mitigation_or_neither'
-        self.correct_matched_pattern = 'mitigation'
+        self.correct_matched_patterns = ['mitigation', 'both']
 
     def get_question_title(self):
         return 'Mitigation'

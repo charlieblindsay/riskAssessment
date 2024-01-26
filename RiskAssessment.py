@@ -234,7 +234,7 @@ class RiskAssessment:
         shortform_feedback_objects = self.get_list_of_shortform_feedback_objects()
 
         for i in range(len(regex_matches)):
-            if regex_matches[i] == prompt_inputs[i].correct_matched_pattern:
+            if regex_matches[i] in prompt_inputs[i].correct_matched_patterns:
                 list_of_shortform_feedback.append(shortform_feedback_objects[i].positive_feedback)
             else:
                 list_of_shortform_feedback.append(shortform_feedback_objects[i].negative_feedback)
@@ -247,7 +247,7 @@ class RiskAssessment:
         prompt_inputs = self.get_list_of_prompt_input_objects()
 
         for i in range(len(regex_matches)):
-            if regex_matches[i] == prompt_inputs[i].correct_matched_pattern:
+            if regex_matches[i] in prompt_inputs[i].correct_matched_patterns:
                 booleans_indicating_which_prompts_need_feedback.append(False)
             else:
                 booleans_indicating_which_prompts_need_feedback.append(True)
@@ -262,7 +262,7 @@ class RiskAssessment:
         prompt_inputs = self.get_list_of_prompt_input_objects()
 
         for i in range(len(regex_matches)):
-            if regex_matches[i] != prompt_inputs[i].correct_matched_pattern:
+            if regex_matches[i] != prompt_inputs[i].correct_matched_patterns:
                 return False
         
         return True
