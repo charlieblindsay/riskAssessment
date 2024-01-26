@@ -1,4 +1,5 @@
 # TODO: Decide whether to remove the get_question method from the PromptInput class.
+from RegexPatternMatcher import RegexPatternMatcher
 
 class ShortformFeedback:
     def __init__(self, positive_feedback, negative_feedback):
@@ -45,6 +46,10 @@ class PromptInput:
     def get_shortform_feedback(self):
         pass
 
+    # Using regular expressions, extracts the relevant information from the prompt output.
+    def get_longform_feedback(self, prompt_output):
+        pass
+
     def to_string(self):
         class_name = self.__class__.__name__
         if hasattr(self, '__dict__'):
@@ -74,14 +79,18 @@ class Activity(PromptInput):
         3. If "{self.activity}" is an activity, answer True, else answer False. 
         
         Use the following output format:
-        1. Description: <your description>
-        2. Comparison: <your comparison>
-        3. Answer: <your answer>'''
+        Description: <your description>
+        Comparison: <your comparison>
+        Answer: <your answer>'''
     
     def get_shortform_feedback(self):
         return ShortformFeedback(positive_feedback=f"Correct! '{self.activity}' is an activity.",
                                  negative_feedback=f"Incorrect. '{self.activity}' is not an activity.")
-        
+    
+    def get_longform_feedback(self, prompt_output):
+        regex_pattern_matcher = RegexPatternMatcher()
+        return regex_pattern_matcher.get_explanation_from_prompt_output(prompt_output, 'Comparison', 'Answer')
+    
 class HowItHarmsInContext(PromptInput):
     def __init__(self, how_it_harms, activity, hazard):
         super().__init__()
@@ -96,21 +105,64 @@ class HowItHarmsInContext(PromptInput):
         return f'''Is 'how it harms': '{self.how_it_harms}' a way that the 'hazard': '{self.hazard}' 
         during the 'activity': '{self.activity}' causes harm?'''
     
+    # TODO: Update this prompt in the main repo
+    # TODO: Scope for adding a 'Add more detail' output.
+    
     def generate_prompt(self):
-        return f'''Follow these instructions:
+        example_of_correct_how_it_harms = '''
+        Example Input:
+        Follow these instructions:
+        1. In one sentence, describe the hazard: 'Wet hands' during the
+        activity: 'Fluids laboratory' given how the hazard harms: 
+        'Electrocution'.
+        2. In one sentence, explain whether or not 'Electrocution' 
+        is a way that the hazard: 'Wet hands' causes harm.
+        3. If 'Electrocution' is a way that the hazard: 
+        'Wet hands' causes harm, answer True, else answer False.
+
+        Output:
+        1. Description: It is argued that wet hands during a fluids laboratory can cause harm through electrocution.
+        2. Explanation: As water is a conductor of electricity, touching electronics with wet hands can cause electrocution as
+        the water provides a path for electrical current to flow through the body.
+        3. Answer: True
+        '''
+
+        example_of_incorrect_how_it_harms = '''
+        Follow these instructions:
+        1. In one sentence, describe the hazard: "Ink spillage" during the
+        activity: "Fluids laboratory".
+        2. In one sentence, explain whether or not "Radiation exposure" is a way that this hazard causes harm.
+        3. If the hazard causes harm, answer True, else, answer False.
+        
+        Output:
+        1. Description: It is argued that an ink spillage during a fluids laboratory can cause radiation exposure.
+        2. Explanation: Radiation exposure is not a way that ink spillage during the fluids laboratory causes harm, 
+        as the hazard primarily involves physical contamination rather than radiation.
+        3. Answer: False.
+        '''
+        return f'''
+        {example_of_correct_how_it_harms}
+
+        {example_of_incorrect_how_it_harms}
+
+        Follow these instructions:
         1. In one sentence, describe the hazard: "{self.hazard}" during the 
         activity: "{self.activity}".
         2. In one sentence, explain whether or not "{self.how_it_harms}" is a way that this hazard causes harm. 
         3. If the hazard causes harm, answer True, else, answer False.
 
         Use the following output format:
-        1. Description: <your description>
-        2. Comparison: <your comparison>
-        3. Answer: <your answer>'''
+        Description: <your description>
+        Explanation: <your Explanation>
+        Answer: <your answer>'''
     
     def get_shortform_feedback(self):
         return ShortformFeedback(positive_feedback=f"Correct! '{self.how_it_harms}' is a way that the hazard: '{self.hazard}' causes harm.",
         negative_feedback=f"Incorrect. '{self.how_it_harms}' is not a way that the hazard: '{self.hazard}' causes harm.")
+    
+    def get_longform_feedback(self, prompt_output):
+        regex_pattern_matcher = RegexPatternMatcher()
+        return regex_pattern_matcher.get_explanation_from_prompt_output(prompt_output, 'Explanation', 'Answer')
     
 class WhoItHarmsInContext(PromptInput):
     def __init__(self, who_it_harms, how_it_harms, activity, hazard):
@@ -129,7 +181,6 @@ class WhoItHarmsInContext(PromptInput):
         given how the hazard harms: '{self.how_it_harms}'?'''
 
     def generate_prompt(self):
-        
         return f'''Follow these instructions:
         1. In one sentence, describe the hazard: '{self.hazard}' during the 
         activity: '{self.activity}' and how it harms: '{self.how_it_harms}'.
@@ -137,13 +188,17 @@ class WhoItHarmsInContext(PromptInput):
         3. If 'who it harms' is harmed by this hazard, answer True, else answer False.
 
         Your answer should be in the format:
-        1. Description: <your description>
-        2. Explanation: your_explanation
-        3. Answer: <your answer>'''
+        Description: <your description>
+        Explanation: your_explanation
+        Answer: <your answer>'''
     
     def get_shortform_feedback(self):
         return ShortformFeedback(positive_feedback=f"Correct! '{self.who_it_harms}' could be harmed by the hazard: '{self.hazard}'.",
         negative_feedback=f"Incorrect. '{self.who_it_harms}' could not be harmed by the hazard: '{self.hazard}'.")
+
+    def get_longform_feedback(self, prompt_output):
+        regex_pattern_matcher = RegexPatternMatcher()
+        return regex_pattern_matcher.get_explanation_from_prompt_output(prompt_output, 'Explanation', 'Answer')
     
 class Prevention(PromptInput):
     def __init__(self, prevention, activity, hazard, how_it_harms, who_it_harms):
@@ -182,15 +237,15 @@ class Prevention(PromptInput):
         prevention measure and a mitigation measure, answer 'both'.
         
         Output:
-        1. Description: The hazard of 'Wet hands' during the activity 'Fluids laboratory' can lead to electric shock of students when 
+        Description: The hazard of 'Wet hands' during the activity 'Fluids laboratory' can lead to electric shock of students when 
         touching electronics (pump power supply) with wet hands.
-        2. Prevention Explanation: 'Students should make sure they touch electronics only with dry hands' is a prevention measure reduces the probability 
+        Prevention Explanation: 'Students should make sure they touch electronics only with dry hands' is a prevention measure reduces the probability 
         they will have wet hands and that an electric shock due to wet hands occurs. It is therefore a prevention measure.
-        3. Mitigation Explanation: Assuming the hazard of 'Wet hands' has led to the harm of an electric shock, 
+        Mitigation Explanation: Assuming the hazard of 'Wet hands' has led to the harm of an electric shock, 
         'Students should make sure they touch electronics only with dry hands' does not directly reduce the severity of this harm
         as the electric shock has already occurred and touching the electronics with dry hands will not reverse this harm.
         It is therefore not a mitigation measure.
-        4. Answer: Prevention'''
+        Answer: Prevention'''
 
         example_of_mitigation = '''
         Example Input:
@@ -208,13 +263,13 @@ class Prevention(PromptInput):
         prevention measure and a mitigation measure, answer 'both'.
 
         Output: 
-        1. Description: The hazard of 'Ink spillage' during the activity 'Fluids laboratory' can lead to serious eye damage to students.
-        2. Prevention Explanation: 'Wash your eyes with clean water' does not reduce the likelihood that
+        Description: The hazard of 'Ink spillage' during the activity 'Fluids laboratory' can lead to serious eye damage to students.
+        Prevention Explanation: 'Wash your eyes with clean water' does not reduce the likelihood that
         an ink spillage will lead to eye damage; it is a response or first aid action. Therefore, it is not a prevention.
-        3. Mitigation Explanation: Assuming the hazard of ink spillage has led to the harm of serious eye damage, 
+        Mitigation Explanation: Assuming the hazard of ink spillage has led to the harm of serious eye damage, 
         'Wash your eyes with clean water' will reduce provide initial care and reduce the potential severity of this eye damage.
         It is therefore a mitigation. 
-        4. Answer: Mitigation.'''
+        Answer: Mitigation.'''
 
         example_of_incorrect_prevention = '''
         Example Input:
@@ -232,16 +287,16 @@ class Prevention(PromptInput):
         prevention measure and a mitigation measure, answer 'both'.
 
         Output:
-        1. Description: The hazard of 'Exposure to toxic welding fumes' during the activity 'Welding metal structures' can lead to 
+        Description: The hazard of 'Exposure to toxic welding fumes' during the activity 'Welding metal structures' can lead to 
         inhaling welding fumes, resulting in respiratory problems, lung damage, and long-term health issues for welders and individuals
         in the vicinity of the welding area.
-        2. Prevention Explanation: 'Using the welding equipment in an enclosed space without proper ventilation' 
+        Prevention Explanation: 'Using the welding equipment in an enclosed space without proper ventilation' 
         will not reduce the likelihood of welders being exposed to toxic welding fumes and actually increases the likelihood of exposure.
         It is therefore not a prevention. 
-        3. Mitigation Explanation: Assuming the hazard of toxic welding fumes exposure has led to respiratory problems, 
+        Mitigation Explanation: Assuming the hazard of toxic welding fumes exposure has led to respiratory problems, 
         'Using the welding equipment in an enclosed space without proper ventilation' will not serve to releive these respiratory problems
         and hence the severity of the harm is not reduced. It is therefore not a mitigation measure. 
-        4. Answer: neither'''
+        Answer: neither'''
 
         return f'''
         {example_of_correct_prevention}
@@ -264,15 +319,19 @@ class Prevention(PromptInput):
         prevention measure and a mitigation measure, answer 'both'.
         
         Use the following output format:
-        1. Description: <your description>
-        2. Prevention Explanation: <your prevention explanation>
-        3. Mitigation Explanation: <your mitigation explanation>
-        4. Answer: <your answer>'''
+        Description: <your description>
+        Prevention Explanation: <your prevention explanation>
+        Mitigation Explanation: <your mitigation explanation>
+        Answer: <your answer>'''
     
     def get_shortform_feedback(self):
         return ShortformFeedback(positive_feedback=f"Correct! '{self.prevention}' is a prevention measure for the hazard: '{self.hazard}'",
         negative_feedback=f"Incorrect. '{self.prevention}' is not a prevention measure for the hazard: '{self.hazard}'.")
-
+    
+    def get_longform_feedback(self, prompt_output):
+        regex_pattern_matcher = RegexPatternMatcher()
+        return regex_pattern_matcher.get_explanation_from_prompt_output(prompt_output, 'Prevention Explanation', 'Mitigation')
+    
 class Mitigation(PromptInput):
     def __init__(self, mitigation, activity, hazard, how_it_harms, who_it_harms):
         super().__init__()
@@ -311,10 +370,10 @@ class Mitigation(PromptInput):
         prevention measure and a mitigation measure, answer both.
 
         Output: 
-        1. Description: The hazard of 'Ink spillage' during the activity 'Fluids laboratory' can lead to serious eye damage to students.
-        2. Prevention Explanation: 'Wash your eyes with clean water' is not a prevention measure; it is a response or first aid action. Prevention measures focus on reducing the probability that the hazard occurs in the first place, whereas washing the eyes is a reactive step taken after exposure.
-        3. Mitigation Explanation: 'Wash your eyes with clean water' is a mitigation measure because it directly reduces the harm caused by the hazard after it has occurred by helping to minimize the potential damage to the eyes and providing initial care.
-        4. Answer: Mitigation.'''
+        Description: The hazard of 'Ink spillage' during the activity 'Fluids laboratory' can lead to serious eye damage to students.
+        Prevention Explanation: 'Wash your eyes with clean water' is not a prevention measure; it is a response or first aid action. Prevention measures focus on reducing the probability that the hazard occurs in the first place, whereas washing the eyes is a reactive step taken after exposure.
+        Mitigation Explanation: 'Wash your eyes with clean water' is a mitigation measure because it directly reduces the harm caused by the hazard after it has occurred by helping to minimize the potential damage to the eyes and providing initial care.
+        Answer: Mitigation.'''
 
         example_of_prevention = '''
         Example Input:
@@ -332,10 +391,10 @@ class Mitigation(PromptInput):
         prevention measure and a mitigation measure, answer both.
         
         Output:
-        1. Description: The hazard of 'Wet hands' during the activity 'Fluids laboratory' can lead to electric shock of students when touching electronics (pump power supply) with wet hands.
-        2. Prevention Explanation: 'Students should make sure they touch electronics only with dry hands' is a prevention measure because it directly reduces the probability that the hazard of electric shock due to wet hands occurs.
-        3. Mitigation Explanation: 'Students should make sure they touch electronics only with dry hands' is not a mitigation measure, as it does not directly reduce the harm caused by the hazard after it has occurred; instead, it focuses on preventing the occurrence of the hazard.
-        4. Answer: Prevention'''
+        Description: The hazard of 'Wet hands' during the activity 'Fluids laboratory' can lead to electric shock of students when touching electronics (pump power supply) with wet hands.
+        Prevention Explanation: 'Students should make sure they touch electronics only with dry hands' is a prevention measure because it directly reduces the probability that the hazard of electric shock due to wet hands occurs.
+        Mitigation Explanation: 'Students should make sure they touch electronics only with dry hands' is not a mitigation measure, as it does not directly reduce the harm caused by the hazard after it has occurred; instead, it focuses on preventing the occurrence of the hazard.
+        Answer: Prevention'''
 
         example_of_incorrect_mitigation = '''
         Example Input:
@@ -353,10 +412,10 @@ class Mitigation(PromptInput):
         prevention measure and a mitigation measure, answer both.
 
         Output:
-        1. Description: The hazard of 'Exposure to toxic welding fumes' during the activity 'Welding metal structures' can lead to inhaling welding fumes, resulting in respiratory problems, lung damage, and long-term health issues for welders and individuals in the vicinity of the welding area.
-        2. Prevention Explanation: 'Using the welding equipment in an enclosed space without proper ventilation' is not a prevention measure; it exacerbates the hazard by creating a condition where exposure to toxic welding fumes is more likely to occur. 
-        3. Mitigation Explanation: 'Using the welding equipment in an enclosed space without proper ventilation' is not a mitigation measure, as it does not directly reduce the harm caused by the hazard after it has occurred. Instead, it exacerbates the hazard by increasing the likelihood of exposure to toxic welding fumes. 
-        4. Answer: neither'''
+        Description: The hazard of 'Exposure to toxic welding fumes' during the activity 'Welding metal structures' can lead to inhaling welding fumes, resulting in respiratory problems, lung damage, and long-term health issues for welders and individuals in the vicinity of the welding area.
+        Prevention Explanation: 'Using the welding equipment in an enclosed space without proper ventilation' is not a prevention measure; it exacerbates the hazard by creating a condition where exposure to toxic welding fumes is more likely to occur. 
+        Mitigation Explanation: 'Using the welding equipment in an enclosed space without proper ventilation' is not a mitigation measure, as it does not directly reduce the harm caused by the hazard after it has occurred. Instead, it exacerbates the hazard by increasing the likelihood of exposure to toxic welding fumes. 
+        Answer: neither'''
 
         return f'''
         {example_of_correct_mitigation}
@@ -379,11 +438,15 @@ class Mitigation(PromptInput):
         prevention measure and a mitigation measure, answer 'both'.
         
         Use the following output format:
-        1. Description: <your description>
-        2. Prevention Explanation: <your prevention explanation>
-        3. Mitigation Explanation: <your mitigation explanation>
-        4. Answer: <your answer>'''
+        Description: <your description>
+        Prevention Explanation: <your prevention explanation>
+        Mitigation Explanation: <your mitigation explanation>
+        Answer: <your answer>'''
     
     def get_shortform_feedback(self):
         return ShortformFeedback(positive_feedback=f"Correct! '{self.mitigation}' is a mitigation measure for the hazard: '{self.hazard}'.",
         negative_feedback=f"Incorrect. '{self.mitigation}' is not a mitigation measure for the hazard: '{self.hazard}'.")
+    
+    def get_longform_feedback(self, prompt_output):
+        regex_pattern_matcher = RegexPatternMatcher()
+        return regex_pattern_matcher.get_explanation_from_prompt_output(prompt_output, 'Mitigation Explanation', 'Answer')

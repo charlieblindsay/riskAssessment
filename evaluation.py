@@ -142,6 +142,7 @@ class Params(TypedDict):
 class Result(TypedDict):
     question_titles: list
     question: str
+    prompt_input_objects: list
     prompts: list
     prompt_outputs: list
     regex_matches: list
@@ -191,6 +192,7 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
 
         question_titles = RA.get_list_of_question_titles()
         questions = RA.get_list_of_questions()
+        prompt_input_objects = RA.get_list_of_prompt_input_objects()
         prompts = RA.get_list_of_prompts()
         prompt_outputs = RA.get_list_of_prompt_outputs(LLM)
         regex_matches = RA.get_list_of_regex_matches(prompt_outputs)
@@ -202,6 +204,7 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
 
         return Result(question_titles=question_titles, 
                       question=questions, 
+                      prompt_input_objects=prompt_input_objects,
                       prompts=prompts, 
                       prompt_outputs=prompt_outputs, 
                       regex_matches=regex_matches, 

@@ -80,6 +80,7 @@ with st.form('risk_assessment'):
 
             question_titles = result['question_titles']
             questions = result['question']
+            prompt_input_objects = result['prompt_input_objects']
             prompts = result['prompts']
             prompt_outputs = result['prompt_outputs']
             regex_matches = result['regex_matches']
@@ -100,11 +101,12 @@ with st.form('risk_assessment'):
                 question_title = question_titles[i]
                 prompt_output = prompt_outputs[i]
                 shortform_feedback = shortform_feedbacks[i]
+                longform_feedback = prompt_input_objects[i].get_longform_feedback(prompt_output)
 
                 feedback += f'--- Q{i + 1}: {question_title} ---\n\n'
                 feedback += f'Feedback {i + 1}: {shortform_feedback}\n\n'
-                if booleans_indicating_which_prompts_need_feedback[i] == True:
-                    feedback += f'Explanation {i + 1}: {prompt_output}\n\n\n'
+                # if booleans_indicating_which_prompts_need_feedback[i] == True:
+                feedback += f'Explanation {i + 1}: {longform_feedback}\n\n\n'
 
             feedback += f'--- Controlled risk multiplication is: {controlled_risk} ---\n\n'
             feedback += f'--- Uncontrolled risk multiplication is: {uncontrolled_risk} ---\n\n'
@@ -118,11 +120,12 @@ with st.form('risk_assessment'):
 
             if uncontrolled_risk != 'correct':
                 st.write(f'Uncontrolled risk multiplication is: {uncontrolled_risk}')
+
+            with st.expander('See Full Feedback'):
+                st.write(feedback)
             
             if 'feedback' not in st.session_state:
                 st.session_state.feedback = feedback
-            
-            # st.write(result)
 
 with st.form('feedback_from_user'):
     # slider_options = ['Strongly Disagree', 'Disagree', 'On the fence', 'Agree', 'Strongly Agree']

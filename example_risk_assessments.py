@@ -142,6 +142,23 @@ RA_4 = RiskAssessment(
     mitigation_prompt_expected_output='mitigation',
 )
 
+RA_4_with_incorrect_how_it_harms = RiskAssessment(
+    activity="Fluids laboratory",
+    hazard="Ink spillage",
+    who_it_harms="Students",
+    how_it_harms="Radiation exposure",
+    uncontrolled_likelihood="2",
+    uncontrolled_severity="3",
+    uncontrolled_risk="6",
+    prevention="Wear safety glasses", # reduces likelihood of hazard occurring
+    mitigation="Wash your eyes with clean water", # reduces severity after hazard has occurred
+    controlled_likelihood="1",
+    controlled_severity="3",
+    controlled_risk="3",
+    prevention_prompt_expected_output='prevention',
+    mitigation_prompt_expected_output='mitigation',
+)
+
 RA_5 = RiskAssessment(
     activity="Fluids laboratory",
     hazard="Wet hands",

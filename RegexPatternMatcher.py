@@ -20,10 +20,14 @@ class RegexPatternMatcher:
         else:
             raise Exception("Pattern not found in output prompt")
         
-    def check_string_for_hazard_prompt(self, string):
-        pattern = re.compile(r"(multi_sentence|no_context|generic|correct)", re.IGNORECASE)
-        match = re.search(pattern, string)
+    def get_explanation_from_prompt_output(self, prompt_output, pattern_to_search_for, lookahead_assertion):
+        
+        pattern = rf"{pattern_to_search_for}:(.*?)(?={lookahead_assertion})"
+        
+        match = re.search(pattern, prompt_output, re.DOTALL)
+        
         if match:
-            return match.group(1).lower()
+            explanation = match.group(1).strip()
+            return explanation
         else:
             raise Exception("Pattern not found in output prompt")
