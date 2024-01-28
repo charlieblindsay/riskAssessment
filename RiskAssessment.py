@@ -53,7 +53,8 @@ class RiskAssessment:
 
         for field_name in self.get_word_fields() + self.get_integer_fields():
             if getattr(self, field_name) == '':
-                empty_fields.append(field_name)
+                formatted_field_name = field_name.replace('_', ' ').title()
+                empty_fields.append(formatted_field_name)
         
         return empty_fields
         
@@ -75,7 +76,8 @@ class RiskAssessment:
 
         for word_field_name in self.get_word_fields():
             if not self.does_string_represent_words(getattr(self, word_field_name)):
-                word_fields_incorrect.append(word_field_name)
+                formatted_word_field_name = word_field_name.split('_', ' ').title()
+                word_fields_incorrect.append(formatted_word_field_name)
         
         return word_fields_incorrect
     
@@ -84,7 +86,8 @@ class RiskAssessment:
 
         for integer_field_name in self.get_integer_fields():
             if not self.does_string_represent_an_integer(getattr(self, integer_field_name)):
-                integer_fields_incorrect.append(integer_field_name)
+                formatted_integer_field_name = integer_field_name.replace('_', ' ').title()
+                integer_fields_incorrect.append(formatted_integer_field_name)
         
         return integer_fields_incorrect
     
@@ -96,13 +99,13 @@ class RiskAssessment:
         feedback_message = ''
 
         if len(empty_fields) > 0:
-            feedback_message += f'Please fill in the following fields: {empty_fields}.\n\n'
+            feedback_message += f'Please fill in the following fields: {str(empty_fields)[1:-1]}.\n\n'
         
-        if len(word_fields_incorrect) > 0:
-            feedback_message += f'Please make sure that the following fields only contain words: {word_fields_incorrect}.\n\n'
+        if len(empty_fields) == 0 and len(word_fields_incorrect) > 0:
+            feedback_message += f'Please make sure that the following fields only contain words: {str(word_fields_incorrect)[1:-1]}.\n\n'
         
-        if len(integer_fields_incorrect) > 0:
-            feedback_message += f'Please make sure that the following fields are a single integer: {integer_fields_incorrect}.\n\n'
+        if len(empty_fields) == 0 and len(integer_fields_incorrect) > 0:
+            feedback_message += f'Please make sure that the following fields are a single integer: {str(integer_fields_incorrect)[1:-1]}.\n\n'
         
         return feedback_message
 
