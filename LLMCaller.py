@@ -81,8 +81,8 @@ class OpenAILLM(LLMCaller):
         self.update_api_key_from_env_file()
 
         # NOTE: Lower temperature means more deterministic output.
-        self.temperature = 0.5
-        self.max_tokens = 300
+        self.temperature = 0.1
+        self.max_tokens = 400
 
     def update_api_key_from_env_file(self):
         load_dotenv()

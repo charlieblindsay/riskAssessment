@@ -3,7 +3,7 @@ import gspread
 from googleapiclient.discovery import build
 
 class GoogleSheetsWriter:
-    def __init__(self, sheet_name):
+    def __init__(self, spreadsheet_id, sheet_name):
         # self.credentials_path = 'google_api_credentials.json'
         # self.spreadsheet_id = spreadsheet_id
 
@@ -17,7 +17,6 @@ class GoogleSheetsWriter:
         # self.client=gspread.authorize(credentials)
 
         self.credentials_path = 'google_api_credentials.json'
-        self.spreadsheet_id = '1O6ztnca_NPC0TXxmSTrw5xV51vUow0I8nAebEsEntbQ'
 
         scopes = ['https://www.googleapis.com/auth/spreadsheets']
         credentials = service_account.Credentials.from_service_account_file(
@@ -26,6 +25,7 @@ class GoogleSheetsWriter:
 
         self.service = build('sheets', 'v4', credentials=credentials)
         self.sheet_name = sheet_name
+        self.spreadsheet_id = spreadsheet_id
         
 
     def write_to_sheets(self, new_line_data):

@@ -312,19 +312,47 @@ with st.expander('Click to see Example Risk Assessment'):
 
 st.title('Risk Assessment Fields')
 with st.form('risk_assessment'):
-    activity = st.text_input('Activity', value='Fluids laboratory')
-    hazard = st.text_input('Hazard', value="Ink spillage")
-    how_it_harms = st.text_input('How does the hazard cause harm?', value="Serious eye damage")
+    # activity = st.text_input('Activity', value='Fluids laboratory')
+    # hazard = st.text_input('Hazard', value="Water being spilt on the floor")
+    # how_it_harms = st.text_input('How does the hazard cause harm?', value="Injuries caused by possible slipping on wet floor")
+    # who_it_harms = st.text_input('Who does the hazard harm?', value="Students")
+    # uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)', value='2')
+    # uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)', value='2')
+    # uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)', value='4')
+    # prevention = st.text_input('Prevention', value="Do not move the water tank when it is full")
+    # mitigation=st.text_input('Mitigation', value="""If someone gets injured due to slipping, apply an ice pack to the injured area and seek medical advice without delay.""")
+    # controlled_likelihood = st.text_input('Controlled Likelihood (enter an integer between 1 and 5)', value='1')
+    # controlled_severity = st.text_input('Controlled Severity (enter an integer between 1 and 5)', value='1')
+    # controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)', value='1')
+    # submit_button = st.form_submit_button("Submit")
+
+    activity = st.text_input('Activity', value='Mucking out horse\'s stable')
+    hazard = st.text_input('Hazard', value="Horse kicking")
+    how_it_harms = st.text_input('How does the hazard cause harm?', value="Impact injuries")
     who_it_harms = st.text_input('Who does the hazard harm?', value="Students")
     uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)', value='2')
     uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)', value='2')
     uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)', value='4')
-    prevention = st.text_input('Prevention', value="Wear safety glasses")
-    mitigation = st.text_input('Mitigation', value="Wash eyes with water")
+    prevention = st.text_input('Prevention', value="Do not stand behind the horse")
+    mitigation=st.text_input('Mitigation', value="""Wear a helmet and body protector when mucking out the horse's stable""")
     controlled_likelihood = st.text_input('Controlled Likelihood (enter an integer between 1 and 5)', value='1')
     controlled_severity = st.text_input('Controlled Severity (enter an integer between 1 and 5)', value='1')
     controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)', value='1')
     submit_button = st.form_submit_button("Submit")
+                      
+    # activity = st.text_input('Activity', value='Fluids laboratory')
+    # hazard = st.text_input('Hazard', value="Ink spillage")
+    # how_it_harms = st.text_input('How does the hazard cause harm?', value="Serious eye damage")
+    # who_it_harms = st.text_input('Who does the hazard harm?', value="Students")
+    # uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)', value='2')
+    # uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)', value='2')
+    # uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)', value='4')
+    # prevention = st.text_input('Prevention', value="Wear safety glasses")
+    # mitigation = st.text_input('Mitigation', value="Wash eyes with water")
+    # controlled_likelihood = st.text_input('Controlled Likelihood (enter an integer between 1 and 5)', value='1')
+    # controlled_severity = st.text_input('Controlled Severity (enter an integer between 1 and 5)', value='1')
+    # controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)', value='1')
+    # submit_button = st.form_submit_button("Submit")
 
     # activity = st.text_input('Activity')
     # hazard = st.text_input('Hazard')
@@ -409,15 +437,28 @@ with st.form('risk_assessment'):
                 n_prompts = len(prompts)
 
                 for i in range(n_prompts):
+                    
                     if booleans_indicating_which_prompts_need_feedback[i] == True:
-                        st.subheader(f'Feedback for Input(s): {prompt_fields[i]}')
+                        prompt_field = prompt_fields[i]
+                        st.subheader(f'Feedback for Input{"s" if prompt_field == "Hazard & How it harms" else ""}: {prompt_fields[i]}')
                         shortform_feedback = shortform_feedbacks[i]
-                        longform_feedback = prompt_input_objects[i].get_longform_feedback(prompt_outputs[i])
 
+                        definitions_to_look_at = prompt_field
+                        longform_feedback = prompt_input_objects[i].get_longform_feedback(prompt_output=prompt_outputs[i])
+                        
+                        if prompt_field == 'Prevention':
+                            if regex_matches[i] == 'mitigation':
+                                longform_feedback = prompt_input_objects[i].get_longform_feedback(prompt_output=prompt_outputs[i], pattern_to_search_for='Mitigation Explanation',lookahead_assertion='Answer')
+                                definitions_to_look_at = 'Prevention and Mitigation'
+                        if prompt_field == 'Mitigation':
+                            if regex_matches[i] == 'prevention':
+                                longform_feedback = prompt_input_objects[i].get_longform_feedback(prompt_output=prompt_outputs[i], pattern_to_search_for='Prevention Explanation',lookahead_assertion='Mitigation')
+                                definitions_to_look_at = 'Prevention and Mitigation'
+                            
                         st.markdown(f'''
                                     - **Feedback:** {shortform_feedback}
                                     - **Explanation:** {longform_feedback}'
-                                    - **Recommendation**: Please look at the definition of the {prompt_fields[i]} input field(s) and the example risk assessment for assistance.
+                                    - **Recommendation**: Please look at the definition of the {definitions_to_look_at} input field{'s' if definitions_to_look_at in ['Hazard & How it harms', 'Prevention and Mitigation'] else ''} and the example risk assessment for assistance.
                                     ''')
                         
                         break # To only show feedback for first field that is incorrect
@@ -485,7 +526,7 @@ with st.expander('Please fill out this form so I can improve the Exercise!'):
         why_not_learning_outcomes = st.text_input('If you answered No, why do you think you have not obtained all the learning outcomes?')
         general_feedback = st.text_input('7/7) Any other general feedback?')
         submit_button = st.form_submit_button("Submit")
-        google_sheets_writer = GoogleSheetsWriter(sheet_name='Sheet1')
+        google_sheets_writer = GoogleSheetsWriter(sheet_name='Sheet1', spreadsheet_id='1O6ztnca_NPC0TXxmSTrw5xV51vUow0I8nAebEsEntbQ')
 
         RiskAssessment_string = f'''RiskAssessment(
             activity="{activity}",
