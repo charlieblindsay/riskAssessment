@@ -480,7 +480,7 @@ with st.form('risk_assessment'):
                                     - **Feedback**: {shortform_feedback}
                                     - **Explanation**: {longform_feedback}
                                     ''')
-                        st.divider()
+                        # st.divider()
 
                         full_feedback += f'--- Q{i + 1}. {input_field} ---\n\n'
                         full_feedback += f'Feedback: {shortform_feedback}\n\n'
