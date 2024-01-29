@@ -224,82 +224,165 @@ class Prevention(PromptInput):
         given how the hazard harms: '{self.how_it_harms}' and who/what the hazard harms: '{self.who_it_harms}?'''
     
     def generate_prompt_without_few_shot_examples(self):
+        # return f'''Follow these instructions:
+        # 1. In one sentence, describe the hazard: '{self.hazard}' during the 
+        # activity: '{self.activity}' given how the hazard harms: '{self.how_it_harms}'
+        # and who/what the hazard harms: '{self.who_it_harms}'.
+        # 2. Explain whether or not '{self.prevention}' reduces the likelihood of the hazard described in step 1.
+        # If so, it is a prevention measure.
+        # 3. Assuming the hazard described in step 1 has already led to harm, explain whether or not '{self.prevention}'
+        # would reduce or remove the harm caused by the hazard described in step 1.
+        # If so, it is a mitigation measure.
+        # 4. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'. 
+        # If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a 
+        # prevention measure and a mitigation measure, answer 'both'.'''
         return f'''Follow these instructions:
         1. In one sentence, describe the hazard: '{self.hazard}' during the 
         activity: '{self.activity}' given how the hazard harms: '{self.how_it_harms}'
-        and who/what the hazard harms: '{self.who_it_harms}'.
-        2. Explain whether or not '{self.prevention}' reduces the likelihood of the hazard described in step 1.
+        and who the hazard harms: '{self.who_it_harms}'.
+        2. Describe the hazard event, which is the event that leads to harm.
+        3. Explain whether or not '{self.prevention}' reduces the likelihood that the hazard event occurs.
         If so, it is a prevention measure.
-        3. Assuming the hazard described in step 1 has already led to harm, explain whether or not '{self.prevention}'
-        would reduce or remove the harm caused by the hazard described in step 1.
+        4. Assuming the hazard event occurs, explain whether or not '{self.prevention}' removes or reduces the harm caused by the event.
         If so, it is a mitigation measure.
-        4. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'. 
+        5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'. 
         If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a 
-        prevention measure and a mitigation measure, answer 'both'.'''
+        prevention measure and a mitigation measure, answer 'Both'.'''
+    
+            # 2. In one sentence, explain why "{self.how_it_harms}" is a way that this hazard can cause harm. 
     
     def generate_prompt(self):
-        example_of_correct_prevention = f'''
-        Example Input:        
-        Follow these instructions:
-        1. In one sentence, describe the hazard: 'Wet hands' during the
-        activity: 'Fluids laboratory' given how the hazard harms: 'Electric shock of students when touching electronics (pump power supply) with wet hands'
-        and who/what the hazard harms: 'Students'.
-        2. Explain whether or not 'Students should make sure they touch electronics only with dry hands' reduces the likelihood of the hazard described in step 1.
-        If so, it is a prevention measure.
-        3. Assuming the hazard described in step 1 has already led to harm, explain whether or not 'Students should make sure they touch electronics only with dry hands'
-        would reduce or remove the harm caused by the hazard described in step 1.
-        If so, it is a mitigation measure.
-        4. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'.
-        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a
-        prevention measure and a mitigation measure, answer 'both'.
-
-        Output:
-        Description: The hazard of 'Wet hands' during the activity 'Fluids laboratory' can lead to electric shock of students when 
-        touching electronics (pump power supply) with wet hands.
-        Prevention Explanation: 'Students should make sure they touch electronics only with dry hands' is a prevention measure reduces the probability 
-        they will have wet hands and that an electric shock due to wet hands occurs. It is therefore a prevention measure.
-        Mitigation Explanation: Assuming the hazard of 'Wet hands' has led to the harm of an electric shock, 
-        'Students should make sure they touch electronics only with dry hands' does not directly reduce the severity of this harm
-        as the electric shock has already occurred and touching the electronics with dry hands will not reverse this harm.
-        It is therefore not a mitigation measure.
-        Answer: Prevention'''
-
-        example_of_mitigation = f'''
-        Example Input:
+        all_few_shot_examples = """
         Follow these instructions:
         1. In one sentence, describe the hazard: 'Ink spillage' during the
         activity: 'Fluids laboratory' given how the hazard harms: 'Serious eye damage'
-        and who/what the hazard harms: 'Students'.
-        2. Explain whether or not 'Wear safety glasses' reduces the likelihood of the hazard described in step 1.
+        and who the hazard harms: 'Students'.
+        2. Describe the hazard event, which is the event that leads to harm.
+        3. Explain whether or not 'First aid' reduces the likelihood that the hazard event occurs.
         If so, it is a prevention measure.
-        3. Assuming the hazard described in step 1 has already led to harm, explain whether or not 'Wear safety glasses'
-        would reduce or remove the harm caused by the hazard described in step 1.
+        4. Assuming the hazard event occurs, explain whether or not 'First aid' removes or reduces the harm caused by the event.
         If so, it is a mitigation measure.
-        4. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'.
-        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a
-        prevention measure and a mitigation measure, answer 'both'.
+        5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'.
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a        
+        prevention measure and a mitigation measure, answer 'Both'.
 
         Output: 
-        Description: The hazard of 'Ink spillage' during the activity 'Fluids laboratory' can lead to serious eye damage to students.
-        Prevention Explanation: 'Wash your eyes with clean water' does not reduce the likelihood that
-        an ink spillage will lead to eye damage; it is a response or first aid action. Therefore, it is not a prevention.
-        Mitigation Explanation: Assuming the hazard of ink spillage has led to the harm of serious eye damage, 
-        'Wash your eyes with clean water' will reduce provide initial care and reduce the potential severity of this eye damage.
-        It is therefore a mitigation. 
-        Answer: Mitigation.'''
+        Hazard Description: The hazard of 'Ink spillage' during the activity 'Fluids laboratory' can lead to serious eye damage to students.
+        Hazard Event Description: Ink being spilled onto a student's face.
+        Prevention Explanation: 'First aid' will not reduce the likelihood of ink being spilled on the student's face; it is therefore not a prevention measure.
+        Mitigation Explanation: If ink has been spilled onto a student's face, 'first aid' will help to wash the ink out of the eyes and reduce eye damage; as it reduces the harm caused by the hazard event, it is therefore a mitigation measure.
+        Answer: Mitigation.
+
+        Follow these instructions:
+        1. In one sentence, describe the hazard: 'Water being spilt on the floor' during the
+        activity: 'Fluids laboratory' given how the hazard harms: 'Injuries caused by possible slipping on wet floor'
+        and who the hazard harms: 'Students'.
+        2. Describe the hazard event, which is the event that leads to harm.
+        3. Explain whether or not 'Do not move the water tank when it is full' reduces the likelihood that the hazard event occurs.
+        If so, it is a prevention measure.
+        4. Assuming the hazard event occurs, explain whether or not 'Do not move the water tank when it is full' removes or reduces the harm caused by the event.
+        If so, it is a mitigation measure.
+        5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'.
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a        
+        prevention measure and a mitigation measure, answer 'Both'.
+
+        Hazard Description: The hazard of 'Water being spilt on the floor' during the activity 'Fluids laboratory' can lead to injuries caused by possible slipping on a wet floor to students.
+        Hazard Event Description: Water is accidentally spilled on the floor.
+        Prevention Explanation: 'Keeping the water tank stationary when it's full' reduces the likelihood of spilling water as moving it increases the likelihood of water being spilled; as it reduces the likelihood of the hazard event, it is a prevention measure.
+        Mitigation Explanation: If water has been spilled on the floor, 'not moving the water tank when it is full' does not remove or reduce the harm caused by the hazard event, as the water is already spilled and poses a slipping hazard; as it does not reduce the harm caused by the hazard event, it is not a mitigation measure.
+        Answer: Prevention.
+
+        Follow these instructions:
+        1. In one sentence, describe the hazard: 'Loud noise' during the
+        activity: 'Using a trombone as a demonstration for a TPS presentation' given how the hazard harms: 'Loud noise from instrument can cause hearing damage.'
+        and who the hazard harms: 'Everyone present'.
+        2. Describe the hazard event, which is the event that leads to harm.
+        3. Explain whether or not 'Keep a space between the player and audience' reduces the likelihood that the hazard event occurs.
+        If so, it is a prevention measure.
+        4. Assuming the hazard event occurs, explain whether or not 'Keep a space between the player and audience' removes or reduces the harm caused by the event.
+        If so, it is a mitigation measure.
+        5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'.
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a        
+        prevention measure and a mitigation measure, answer 'Both'.
+
+        Hazard Description: The hazard of 'Loud noise' during the activity 'Using a trombone as a demonstration for a TPS presentation' can cause hearing damage to everyone present.
+        Hazard Event Description: The trombone player plays the instrument at a high volume, producing a loud noise.
+        Prevention Explanation: 'Keeping a space between the player and the audience' does not reduce the likelihood of the trombone producing a loud noise. As it does not reduce the likelihood of the hazard event, it is not a prevention measure.
+        Mitigation Explanation: If the hazard event occurs and the trombone produces a loud noise, 'keeping a space between the player and the audience' will reduce the noise heard by the audience, hence reducing the severity of the hearing damage caused by the loud noise; as it reduces the harm caused by the hazard event, it is a mitigation measure.
+        Answer: Mitigation.
+
+        Follow these instructions:
+        1. In one sentence, describe the hazard: 'Allergies' during the
+        activity: 'Showing an artificial snowman for a TPS presentation' given how the hazard harms: 'Contact with the artificial snow (polymers) might cause allergies'
+        and who the hazard harms: 'Audience'.
+        2. Describe the hazard event, which is the event that leads to harm.
+        3. Explain whether or not 'Keep safe distance between the snowman and audience' reduces the likelihood that the hazard event occurs.
+        If so, it is a prevention measure.
+        4. Assuming the hazard event occurs, explain whether or not 'Keep safe distance between the snowman and audience' removes or reduces the harm caused by the event.
+        If so, it is a mitigation measure.
+        5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'.
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a        
+        prevention measure and a mitigation measure, answer 'Both'.
+
+        Hazard Description: The hazard of 'Allergies' during the activity 'Showing an artificial snowman for a TPS presentation' can lead to contact with the artificial snow (polymers) causing allergies to the audience.
+        Hazard Event Description: An audience member allergic to the artificial snow comes into contact with it.
+        Prevention Explanation: 'Keeping a safe distance between the snowman and the audience' reduces the likelihood that an allergic audience member comes into contact with the artificial snow; as it reduces the likelihood of the hazard event, it is therefore a prevention measure.
+        Mitigation Explanation: If an allergic audience member comes into contact with the artificial snow, 'keeping a safe distance between the snowman and the audience' will not remove or reduce the harm caused by the allergies as the allergic reaction has already been caused; as it does not reduce the harm caused by the hazard event, it is not a mitigation measure.
+        Answer: Prevention.
+
+        Follow these instructions:
+        1. In one sentence, describe the hazard: 'Syringes with sharp needles' during the
+        activity: 'Fluids laboratory' given how the hazard harms: 'Sharp needles can pierce the skin and cause bleeding'
+        and who the hazard harms: 'Students'.
+        2. Describe the hazard event, which is the event that leads to harm.
+        3. Explain whether or not 'Wear lab coat and PPE' reduces the likelihood that the hazard event occurs.   
+        If so, it is a prevention measure.
+        4. Assuming the hazard event occurs, explain whether or not 'Wear lab coat and PPE' removes or reduces the harm caused by the event.
+        If so, it is a mitigation measure.
+        5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'.
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a        
+        prevention measure and a mitigation measure, answer 'Both'.
+
+        Hazard Description: The hazard of 'Syringes with sharp needles' during the activity 'Fluids laboratory' can lead to sharp needles piercing the skin and causing bleeding to students.
+        Hazard Event Description: A sharp syringe needle is directed towards an student.
+        Prevention Explanation: 'Wearing a lab coat and personal protective equipment (PPE)' does not reduce the likelihood of a student directing a syringe needle towards another student; as it does not reduce the likelihood of the hazard event, it is therefore not a prevention measure.
+        Mitigation Explanation: If a sharp syringe needle is directed towards a student, 'wearing a lab coat and PPE' will reduce the harm caused by the sharp needle as it is unlikely to pierce through the lab coat and PPE; as it reduces the harm caused by the hazard event, it is a mitigation measure.
+        Answer: Mitigation.
+
+        Follow these instructions:
+        1. In one sentence, describe the hazard: 'Water from instrument' during the
+        activity: 'Using a trombone as a demonstration for a TPS presentation' given how the hazard harms: 'Condensation formed in instrument could spread germs if released'
+        and who the hazard harms: 'Audience'.
+        2. Describe the hazard event, which is the event that leads to harm.
+        3. Explain whether or not 'Keep a space between the player and audience' reduces the likelihood that the hazard event occurs.
+        If so, it is a prevention measure.
+        4. Assuming the hazard event occurs, explain whether or not 'Keep a space between the player and audience' removes or reduces the harm caused by the event.
+        If so, it is a mitigation measure.
+        5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'.
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a        
+        prevention measure and a mitigation measure, answer 'Both'.
+        
+        Hazard Description: The hazard of 'Water from instrument' during the activity 'Using a trombone as a demonstration for a TPS presentation' can lead to the spread of germs to the audience if condensation formed in the instrument is released.
+        Hazard Event Description: Water from the trombone condenses and is released into the air.
+        Prevention Explanation: 'Keeping a space between the player and the audience' does not reduce the likelihood of water condensing in the instrument or being released; as it does not reduce the likelihood of the hazard event, it is not a prevention measure.
+        Mitigation Explanation: If water from the instrument is released, 'keeping a space between the player and the audience' will mean that fewer germs reach the audience members so will reduce the harm caused by the spread of germs; as it reduces the harm caused by the hazard event, it is a mitigation measure.
+        Answer: Mitigation.
+        
+        """
 
         return f'''
-        {example_of_correct_prevention}
-
-        {example_of_mitigation}
+        {all_few_shot_examples}
 
         {self.generate_prompt_without_few_shot_examples()}
 
         Use the following output format:
-        Description: <your description>
+        Hazard Description: <your hazard description>
+        Hazard Event Description: <your hazard event description>
         Prevention Explanation: <your prevention explanation>
         Mitigation Explanation: <your mitigation explanation>
         Answer: <your answer>'''
+    
+            # How it Harms Explanation: <your how it harms explanation>
     
     def get_shortform_feedback(self):
         return ShortformFeedback(positive_feedback=f"Correct! '{self.prevention}' is a prevention measure for the hazard: '{self.hazard}'",
@@ -330,14 +413,26 @@ class Mitigation(PromptInput):
         given how the hazard harms: '{self.how_it_harms}' and who/what the hazard harms: '{self.who_it_harms}?'''
     
     def generate_prompt_without_few_shot_examples(self):
+        # return f'''Follow these instructions:
+        # 1. In one sentence, describe the hazard: '{self.hazard}' during the 
+        # activity: '{self.activity}' given how the hazard harms: '{self.how_it_harms}'
+        # and who the hazard harms: '{self.who_it_harms}'.
+        # 2. In one sentence, explain why "{self.how_it_harms}" is a way that this hazard can cause harm. 
+        # 3. Explain whether or not '{self.mitigation}' reduces the likelihood that the hazard causes harm.
+        # If so, it is a prevention measure.
+        # 4. Assuming the hazard described above does harm someone, explain whether or not '{self.mitigation}' reduces the harm.
+        # If so, it is a mitigation measure.
+        # 5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'. 
+        # If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a 
+        # prevention measure and a mitigation measure, answer 'Both'.'''
         return f'''Follow these instructions:
         1. In one sentence, describe the hazard: '{self.hazard}' during the 
         activity: '{self.activity}' given how the hazard harms: '{self.how_it_harms}'
         and who the hazard harms: '{self.who_it_harms}'.
-        2. In one sentence, explain why "{self.how_it_harms}" is a way that this hazard can cause harm. 
-        3. Explain whether or not '{self.mitigation}' reduces the likelihood that the hazard causes harm.
+        2. Describe the hazard event, which is the event that leads to harm.
+        3. Explain whether or not '{self.mitigation}' reduces the likelihood that the hazard event occurs.
         If so, it is a prevention measure.
-        4. If the hazard described above does harm someone, explain whether or not '{self.mitigation}' reduces the harm.
+        4. Assuming the hazard event occurs, explain whether or not '{self.mitigation}' removes or reduces the harm caused by the event.
         If so, it is a mitigation measure.
         5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'. 
         If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a 
@@ -354,7 +449,7 @@ class Mitigation(PromptInput):
         2. In one sentence, explain why "Serious eye damage" is a way that this hazard can cause harm.
         3. Explain whether or not 'First aid' reduces the likelihood that the hazard causes harm.
         If so, it is a prevention measure.
-        4. If the hazard described above does harm someone, explain whether or not 'First aid' reduces the harm. 
+        4. Assuming the hazard described above does harm someone, explain whether or not 'First aid' reduces the harm. 
         If so, it is a mitigation measure.
         5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'.
         If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a        
@@ -363,8 +458,8 @@ class Mitigation(PromptInput):
         Output: 
         Description: The hazard of 'Ink spillage' during the activity 'Fluids laboratory' can lead to serious eye damage to students.
         How it Harms Explanation: 'Serious eye damage' is a way that this hazard causes harm because if ink comes into contact with the eyes, it can cause serious damage.
-        Prevention Explanation: Washing your eyes with clean water will not reduce the likelihood of an ink spillage causing harm and it is a reactive step taken after the ink spillage; it therefore does not reduce the likelihood that the hazard causes harm and is not a prevention measure.
-        Mitigation Explanation: If an ink spillage has led to serious eye damagen, washing your eyes with clean water will help to wash the ink out of the eyes and reduce eye damage; as it reduces the harm, it is therefore a mitigation measure.
+        Prevention Explanation: First aid will not reduce the likelihood of an ink spillage causing harm and it is a reactive step taken after the ink spillage; it therefore does not reduce the likelihood that the hazard causes harm and is not a prevention measure.
+        Mitigation Explanation: If an ink spillage has led to serious eye damagen, first aid will help to wash the ink out of the eyes and reduce eye damage; as it reduces the harm, it is therefore a mitigation measure.
         Answer: Mitigation.'''
 
         example_of_mitigation_which_reduces_harm_when_hazard_event_is_occurring = '''
@@ -376,7 +471,7 @@ class Mitigation(PromptInput):
         2. In one sentence, explain why "Impact injury" is a way that this hazard can cause harm.
         3. Explain whether or not 'Wear a helmet and body protector' reduces the likelihood that the hazard causes harm.
         If so, it is a prevention measure.
-        4. If the hazard described above does harm someone, explain whether or not 'Wear a helmet and body protector' reduces the harm.
+        4. Assuming the hazard described above does harm someone, explain whether or not 'Wear a helmet and body protector' reduces the harm.
         If so, it is a mitigation measure.
         5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'.
         If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a        
@@ -398,7 +493,7 @@ class Mitigation(PromptInput):
         2. In one sentence, explain why "Tripping can cause physical harm." is a way that this hazard can cause harm.
         3. Explain whether or not 'Take care when walking around' reduces the likelihood that the hazard causes harm.
         If so, it is a prevention measure.
-        4. If the hazard described above does harm someone, explain whether or not 'Take care when walking around' reduces the harm.
+        4. Assuming the hazard described above does harm someone, explain whether or not 'Take care when walking around' reduces the harm.
         If so, it is a mitigation measure.
         5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'.
         If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a        

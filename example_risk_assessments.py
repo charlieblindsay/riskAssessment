@@ -51,7 +51,7 @@ RA_controlled_likelihood_wrong_type = RiskAssessment(
     controlled_severity="1",
     controlled_risk="1",
     prevention_prompt_expected_output='prevention',
-    mitigation_prompt_expected_output='both',
+    mitigation_prompt_expected_output='mitigation',
 )
 
 RA_incorrect_prevention_and_mitigation = RiskAssessment(
@@ -89,7 +89,7 @@ RA_1 = RiskAssessment(
     mitigation_prompt_expected_output='',
 )
 
-RA_2 = RiskAssessment(
+RA_2_hearing_damage = RiskAssessment(
     activity="Using a trombone as a demonstration for a TPS presentation",
     hazard="Loud noise",
     who_it_harms="Everyone present",
@@ -124,7 +124,7 @@ RA_2_mitigation_prevention_switched = RiskAssessment(
 )
 
 
-RA_3 = RiskAssessment(
+RA_3_water_from_instrument = RiskAssessment(
     activity="Using a trombone as a demonstration for a TPS presentation",
     hazard="Water from instrument",
     who_it_harms="Audience",
@@ -142,7 +142,7 @@ RA_3 = RiskAssessment(
     mitigation_prompt_expected_output='prevention', # reduces likelihood that someone becomes ill
 )
 
-RA_3_mitiagation_prevention_switched = RiskAssessment(
+RA_3_water_from_instrument_mitiagation_prevention_switched = RiskAssessment(
     activity="Using a trombone as a demonstration for a TPS presentation",
     hazard="Water from instrument",
     who_it_harms="Audience",
@@ -190,7 +190,7 @@ RA_4_with_first_aid = RiskAssessment(
     controlled_likelihood="1",
     controlled_severity="3",
     controlled_risk="3",
-    prevention_prompt_expected_output='prevention',
+    prevention_prompt_expected_output='mitigation',
     mitigation_prompt_expected_output='mitigation',
 )
 
@@ -208,7 +208,7 @@ RA_4_with_incorrect_how_it_harms = RiskAssessment(
     controlled_likelihood="1",
     controlled_severity="3",
     controlled_risk="3",
-    prevention_prompt_expected_output='prevention',
+    prevention_prompt_expected_output='mitigation',
     mitigation_prompt_expected_output='mitigation',
 )
 
@@ -263,7 +263,7 @@ RA_6 = RiskAssessment(
     mitigation_prompt_expected_output='prevention',
 )
 
-RA_7 = RiskAssessment(
+RA_7_water_tank = RiskAssessment(
     activity="Fluids laboratory",
     hazard="Water being spilt on the floor",
     who_it_harms="Students",
@@ -281,7 +281,7 @@ RA_7 = RiskAssessment(
     mitigation_prompt_expected_output='mitigation',
 )
 
-RA_7_mitigation_prevention_switched = RiskAssessment(
+RA_7_water_tank_mitigation_prevention_switched = RiskAssessment(
     activity="Fluids laboratory",
     hazard="Water being spilt on the floor",
     who_it_harms="Students",
@@ -300,7 +300,7 @@ RA_7_mitigation_prevention_switched = RiskAssessment(
 )
 
 
-RA_8 = RiskAssessment(
+RA_8_syringe_needle = RiskAssessment(
     activity="Fluids laboratory",
     hazard="Syringes with sharp needles",
     who_it_harms="Students",
@@ -314,10 +314,10 @@ RA_8 = RiskAssessment(
     controlled_severity="1",
     controlled_risk="2",
     prevention_prompt_expected_output='prevention',
-    mitigation_prompt_expected_output='both',
+    mitigation_prompt_expected_output='mitigation',
 )
 
-RA_8_mitigation_prevention_switched = RiskAssessment(
+RA_8_syringe_needle_mitigation_prevention_switched = RiskAssessment(
     activity="Fluids laboratory",
     hazard="Syringes with sharp needles",
     who_it_harms="Students",
@@ -330,7 +330,7 @@ RA_8_mitigation_prevention_switched = RiskAssessment(
     controlled_likelihood="2",
     controlled_severity="1",
     controlled_risk="2",
-    prevention_prompt_expected_output='both',
+    prevention_prompt_expected_output='mitigation',
     mitigation_prompt_expected_output='prevention',
 )
 
@@ -436,40 +436,6 @@ RA_15_mitigation_prevention_switched = RiskAssessment(
     mitigation_prompt_expected_output='prevention',
 )
 
-RA_16 = RiskAssessment(
-    activity='TPS presentation: Can a human break a diving board?',
-    hazard='Loud noise',
-    who_it_harms='Everyone present',
-    how_it_harms='Loud microphone volume could cause hearing damage',
-    uncontrolled_likelihood='4',
-    uncontrolled_severity='1',
-    uncontrolled_risk='4',
-    prevention='Check microphone volume before beginning presentation, ensure volume is sufficiently but not excessively loud',
-    mitigation='Keep space between audience and speaker',
-    controlled_likelihood='1',
-    controlled_severity='1',
-    controlled_risk='1',
-    prevention_prompt_expected_output='prevention',
-    mitigation_prompt_expected_output='mitigation',
-)
-
-RA_16_mitigation_prevention_switched = RiskAssessment(
-    activity='TPS presentation: Can a human break a diving board?',
-    hazard='Loud noise',
-    who_it_harms='Everyone present',
-    how_it_harms='Loud microphone volume could cause hearing damage',
-    uncontrolled_likelihood='4',
-    uncontrolled_severity='1',
-    uncontrolled_risk='4',
-    mitigation='Check microphone volume before beginning presentation, ensure volume is sufficiently but not excessively loud',
-    prevention='Keep space between audience and speaker',
-    controlled_likelihood='1',
-    controlled_severity='1',
-    controlled_risk='1',
-    prevention_prompt_expected_output='mitigation',
-    mitigation_prompt_expected_output='prevention',
-)
-
 RA_17 = RiskAssessment(
     activity='Bringing in a drone and two empty Li-Po batteries',
     hazard='Sharp Edge of propellor blade on drone',
@@ -538,7 +504,7 @@ RA_20 = RiskAssessment(
     mitigation_prompt_expected_output='prevention', # Another prevention measure as it reduces the likelihood of the zip tie hitting an audience member
 )
 
-RA_21 = RiskAssessment(
+RA_21_snowman = RiskAssessment(
     activity='Showing an artificial snowman for a TPS presentation',
     hazard='Allergies',
     who_it_harms='Audience',
@@ -629,15 +595,15 @@ RA_mucking_out_horse_mitigation_prevention_switched = RiskAssessment(
 )
 
 
-example_risk_assessments = [RA_1, RA_2, RA_3, 
-                            RA_4, RA_5, RA_6, RA_7, RA_8, RA_9,
-                            RA_13, RA_14, RA_15, RA_16, RA_17, RA_18, RA_19, RA_20, RA_21,
+example_risk_assessments = [RA_1, RA_2_hearing_damage, RA_3_water_from_instrument, 
+                            RA_4, RA_5, RA_6, RA_7_water_tank, RA_8_syringe_needle, RA_9,
+                            RA_13, RA_14, RA_15, RA_17, RA_18, RA_19, RA_20, RA_21_snowman,
                             RA_22, RA_23, RA_23,
                             RA_incorrect_prevention_and_mitigation, RA_2_mitigation_prevention_switched,
-                            RA_3_mitiagation_prevention_switched, RA_4_with_first_aid,
-                            RA_5_mitigation_prevention_switched, RA_7_mitigation_prevention_switched,
-                            RA_8_mitigation_prevention_switched, RA_9_mitigation_prevention_switched,
-                            RA_15_mitigation_prevention_switched, RA_16_mitigation_prevention_switched,
+                            RA_3_water_from_instrument_mitiagation_prevention_switched, RA_4_with_first_aid,
+                            RA_5_mitigation_prevention_switched, RA_7_water_tank_mitigation_prevention_switched,
+                            RA_8_syringe_needle_mitigation_prevention_switched, RA_9_mitigation_prevention_switched,
+                            RA_15_mitigation_prevention_switched,
                             RA_mucking_out_horse]
 
 print(len(example_risk_assessments))
