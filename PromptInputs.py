@@ -270,7 +270,7 @@ class Prevention(PromptInput):
         Hazard Description: The hazard of 'Ink spillage' during the activity 'Fluids laboratory' can lead to serious eye damage to students.
         Hazard Event Description: Ink being spilled onto a student's face.
         Prevention Explanation: 'First aid' will not reduce the likelihood of ink being spilled on the student's face; it is therefore not a prevention measure.
-        Mitigation Explanation: If ink has been spilled onto a student's face, 'first aid' will help to wash the ink out of the eyes and reduce eye damage; as it reduces the harm caused by the hazard event, it is therefore a mitigation measure.
+        Mitigation Explanation: If ink has been spilled onto a student's face, 'first aid' will help to wash the ink out of the eyes and reduce eye damage after the hazard event has occurred; as it reduces the harm caused by the hazard event, it is therefore a mitigation measure.
         Answer: Mitigation.
 
         Follow these instructions:
@@ -310,25 +310,6 @@ class Prevention(PromptInput):
         Prevention Explanation: 'Keeping a space between the player and the audience' does not reduce the likelihood of the trombone producing a loud noise. As it does not reduce the likelihood of the hazard event, it is not a prevention measure.
         Mitigation Explanation: If the hazard event occurs and the trombone produces a loud noise, 'keeping a space between the player and the audience' will reduce the noise heard by the audience, hence reducing the severity of the hearing damage caused by the loud noise; as it reduces the harm caused by the hazard event, it is a mitigation measure.
         Answer: Mitigation.
-
-        Follow these instructions:
-        1. In one sentence, describe the hazard: 'Allergies' during the
-        activity: 'Showing an artificial snowman for a TPS presentation' given how the hazard harms: 'Contact with the artificial snow (polymers) might cause allergies'
-        and who the hazard harms: 'Audience'.
-        2. Describe the hazard event, which is the event that leads to harm.
-        3. Explain whether or not 'Keep safe distance between the snowman and audience' reduces the likelihood that the hazard event occurs.
-        If so, it is a prevention measure.
-        4. Assuming the hazard event occurs, explain whether or not 'Keep safe distance between the snowman and audience' removes or reduces the harm caused by the event.
-        If so, it is a mitigation measure.
-        5. If it is a prevention measure, answer 'Prevention'. If it is a migitation meausure, answer 'Mitigation'.
-        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a        
-        prevention measure and a mitigation measure, answer 'Both'.
-
-        Hazard Description: The hazard of 'Allergies' during the activity 'Showing an artificial snowman for a TPS presentation' can lead to contact with the artificial snow (polymers) causing allergies to the audience.
-        Hazard Event Description: An audience member allergic to the artificial snow comes into contact with it.
-        Prevention Explanation: 'Keeping a safe distance between the snowman and the audience' reduces the likelihood that an allergic audience member comes into contact with the artificial snow; as it reduces the likelihood of the hazard event, it is therefore a prevention measure.
-        Mitigation Explanation: If an allergic audience member comes into contact with the artificial snow, 'keeping a safe distance between the snowman and the audience' will not remove or reduce the harm caused by the allergies as the allergic reaction has already been caused; as it does not reduce the harm caused by the hazard event, it is not a mitigation measure.
-        Answer: Prevention.
 
         Follow these instructions:
         1. In one sentence, describe the hazard: 'Syringes with sharp needles' during the

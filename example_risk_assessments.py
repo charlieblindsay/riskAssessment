@@ -504,45 +504,6 @@ RA_20 = RiskAssessment(
     mitigation_prompt_expected_output='prevention', # Another prevention measure as it reduces the likelihood of the zip tie hitting an audience member
 )
 
-RA_21_snowman = RiskAssessment(
-    activity='Showing an artificial snowman for a TPS presentation',
-    hazard='Allergies',
-    who_it_harms='Audience',
-    how_it_harms='Contact with the artificial snow (polymers) might cause allergies',
-    uncontrolled_likelihood='4',
-    uncontrolled_severity='2',
-    uncontrolled_risk='8',
-    prevention='Keep safe distance between the snowman and audience',
-    mitigation='Ask about allergies beforehand',
-    controlled_likelihood='1',
-    controlled_severity='1',
-    controlled_risk='1',
-    prevention_prompt_expected_output='prevention',
-    mitigation_prompt_expected_output='prevention',
-    # "Ask about allergies beforehand" is a prevention measure for the hazard of allergies 
-    # during the activity of showing an artificial snowman for a TPS presentation. This is 
-    # because by asking about allergies beforehand, the presenter can identify individuals who 
-    # may be allergic to the artificial snow and take appropriate measures to prevent contact 
-    # with the allergen.
-)
-
-RA_22 = RiskAssessment(
-    activity='Showing an artificial snowman for a TPS presentation',
-    hazard='Poison',
-    who_it_harms='Audience',
-    how_it_harms='Eat the demonstration aritificial snowman',
-    uncontrolled_likelihood='4',
-    uncontrolled_severity='2',
-    uncontrolled_risk='8',
-    prevention='Keep safe distance between the snowman and audience',
-    mitigation='Warn them it is fake snow, don’t try to taste it',
-    controlled_likelihood='1',
-    controlled_severity='1',
-    controlled_risk='1',
-    prevention_prompt_expected_output='prevention',
-    mitigation_prompt_expected_output='prevention', # Another prevention measure,
-)
-
 RA_23 = RiskAssessment(
     activity='Using a mechanical pencil and breaking the pencil lead against a surface for demonstration',
     hazard='Pencil lead breaking and becoming a projectile',
@@ -597,8 +558,8 @@ RA_mucking_out_horse_mitigation_prevention_switched = RiskAssessment(
 
 example_risk_assessments = [RA_1, RA_2_hearing_damage, RA_3_water_from_instrument, 
                             RA_4, RA_5, RA_6, RA_7_water_tank, RA_8_syringe_needle, RA_9,
-                            RA_13, RA_14, RA_15, RA_17, RA_18, RA_19, RA_20, RA_21_snowman,
-                            RA_22, RA_23, RA_23,
+                            RA_13, RA_14, RA_15, RA_17, RA_18, RA_19, RA_20,
+                            RA_23, RA_23,
                             RA_incorrect_prevention_and_mitigation, RA_2_mitigation_prevention_switched,
                             RA_3_water_from_instrument_mitiagation_prevention_switched, RA_4_with_first_aid,
                             RA_5_mitigation_prevention_switched, RA_7_water_tank_mitigation_prevention_switched,

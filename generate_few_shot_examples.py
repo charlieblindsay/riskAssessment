@@ -2,7 +2,7 @@
 from example_risk_assessments import RA_9, RA_4_with_incorrect_how_it_harms
 
 # Current prevention examples:
-from example_risk_assessments import RA_7_water_tank, RA_2_hearing_damage, RA_21_snowman, RA_8_syringe_needle, RA_3_water_from_instrument
+from example_risk_assessments import RA_7_water_tank, RA_2_hearing_damage, RA_8_syringe_needle, RA_3_water_from_instrument
 
 # Current mitigation examples:
 from example_risk_assessments import RA_6, RA_mucking_out_horse, RA_4_with_first_aid
@@ -37,7 +37,6 @@ if __name__ == "__main__":
     print(f'{get_mitigation_prompt(RA_4_with_first_aid)}\n\n\n') # correct = mitigation
     print(f'{get_prevention_prompt(RA_7_water_tank)}\n\n\n') # correct=prevention
     print(f'{get_mitigation_prompt(RA_2_hearing_damage)}\n\n\n') # correct=mitigation
-    print(f'{get_prevention_prompt(RA_21_snowman)}\n\n\n') # correct=prevention
     print(f'{get_mitigation_prompt(RA_8_syringe_needle)}\n\n\n') # correct=mitigation
     print(f'{get_mitigation_prompt(RA_3_water_from_instrument)}\n\n\n') # correct=prevention
     
