@@ -329,7 +329,7 @@ with st.form('risk_assessment'):
     activity = st.text_input('Activity', value='Mucking out horse\'s stable')
     hazard = st.text_input('Hazard', value="Horse kicking")
     how_it_harms = st.text_input('How does the hazard cause harm?', value="Impact injuries")
-    who_it_harms = st.text_input('Who does the hazard harm?', value="Students")
+    who_it_harms = st.text_input('Who does the hazard harm?', value="Horse riders")
     uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)', value='2')
     uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)', value='2')
     uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)', value='4')
@@ -403,6 +403,7 @@ with st.form('risk_assessment'):
 
             input_fields = ['Activity', 'Hazard & How it harms', 'Who it harms', 'Prevention', 'Mitigation',
                                     'All Severity, Likelihood and Risk Inputs']
+            
             if input_check_feedback_message == '' and controlled_risk == 'correct' and uncontrolled_risk == 'correct':
                 feedback_table = {
                     'Input field': input_fields,
@@ -490,8 +491,6 @@ with st.form('risk_assessment'):
                     st.markdown(f'''
                                 - Controlled risk multiplication is: {controlled_risk}
                                 - Uncontrolled risk multiplication is: {uncontrolled_risk}''')
-
-
                 
             if 'feedback' not in st.session_state:
                 st.session_state.feedback = [full_feedback]

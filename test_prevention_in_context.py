@@ -16,13 +16,8 @@ if __name__ == '__main__':
     examples = examples_generator.get_input_and_expected_output_list()
 
     test_accuracy = TestModelAccuracy(test_description="""Testing prevention input in student Fluids Lab and TPS presentation Risk Assessment examples.
-                                      
-                                      Added hazard event description.
-
-                                      Refer to hazard event in mitigation and prevention instructions.
-
-                                      Added 6 new few shot examples, 3 of which are prevention and 3 of which are mitigation. 
-                                       """,
+                                      This is with few shot prompting but no chain of thought.
+                                      """,
                                       LLM=OpenAILLM(),
                                                 LLM_name='gpt-3.5-turbo',
                                                 list_of_input_and_expected_outputs=examples,
