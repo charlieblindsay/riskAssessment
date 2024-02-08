@@ -73,12 +73,11 @@ RA_incorrect_prevention_and_mitigation = RiskAssessment(
     controlled_risk="1",
     prevention_prompt_expected_output='neither',
     mitigation_prompt_expected_output='',
-
 )
 
 RA_1 = RiskAssessment(
     activity="Using a trombone as a demonstration for a TPS presentation",
-    hazard="Impact from instrument",
+    hazard="Instrument hits student",
     who_it_harms="Audience",
     how_it_harms="Slide could hit audience member, causing impact injury.",
     uncontrolled_likelihood="4",
@@ -127,7 +126,6 @@ RA_2_mitigation_prevention_switched = RiskAssessment(
     mitigation_prompt_expected_output='prevention',
 )
 
-
 # RA_3_water_from_instrument = RiskAssessment(
 #     activity="Using a trombone as a demonstration for a TPS presentation",
 #     hazard="Water from instrument",
@@ -166,7 +164,7 @@ RA_2_mitigation_prevention_switched = RiskAssessment(
 
 RA_4 = RiskAssessment(
     activity="Fluids laboratory",
-    hazard="Ink spillage",
+    hazard="Ink is spilled onto students face",
     who_it_harms="Students",
     how_it_harms="Serious eye damage",
     uncontrolled_likelihood="2",
@@ -181,27 +179,27 @@ RA_4 = RiskAssessment(
     mitigation_prompt_expected_output='mitigation',
 )
 
-RA_4_with_first_aid = RiskAssessment(
-    activity="Fluids laboratory",
-    hazard="Ink spillage",
-    who_it_harms="Students",
-    how_it_harms="Serious eye damage",
-    uncontrolled_likelihood="2",
-    uncontrolled_severity="3",
-    uncontrolled_risk="6",
-    prevention="Wear safety glasses", # reduces likelihood of hazard occurring
-    mitigation="First aid", # reduces severity after hazard has occurred
-    controlled_likelihood="1",
-    controlled_severity="3",
-    controlled_risk="3",
-    prevention_prompt_expected_output='mitigation',
-    mitigation_prompt_expected_output='mitigation',
-)
+# RA_4_with_first_aid = RiskAssessment(
+#     activity="Fluids laboratory",
+#     hazard="Ink is spilled onto students face",
+#     who_it_harms="Students",
+#     how_it_harms="Serious eye damage",
+#     uncontrolled_likelihood="2",
+#     uncontrolled_severity="3",
+#     uncontrolled_risk="6",
+#     prevention="Wear safety glasses", # reduces likelihood of hazard occurring
+#     mitigation="First aid", # reduces severity after hazard has occurred
+#     controlled_likelihood="1",
+#     controlled_severity="3",
+#     controlled_risk="3",
+#     prevention_prompt_expected_output='mitigation',
+#     mitigation_prompt_expected_output='mitigation',
+# )
 
 
 RA_4_with_incorrect_how_it_harms = RiskAssessment(
     activity="Fluids laboratory",
-    hazard="Ink spillage",
+    hazard="Ink is spilled onto students face",
     who_it_harms="Students",
     how_it_harms="Radiation exposure",
     uncontrolled_likelihood="2",
@@ -218,9 +216,9 @@ RA_4_with_incorrect_how_it_harms = RiskAssessment(
 
 RA_5 = RiskAssessment(
     activity="Fluids laboratory",
-    hazard="Wet hands",
+    hazard="Student touches electronics with wet hands",
     who_it_harms="Students",
-    how_it_harms="Electric shock of students when touching electronics (pump power supply) with wet hands",
+    how_it_harms="Electric shock",
     uncontrolled_likelihood="3",
     uncontrolled_severity="3",
     uncontrolled_risk="9",
@@ -235,9 +233,9 @@ RA_5 = RiskAssessment(
 
 RA_5_mitigation_prevention_switched = RiskAssessment(
     activity="Fluids laboratory",
-    hazard="Wet hands",
+    hazard="Student touches electronics with wet hands",
     who_it_harms="Students",
-    how_it_harms="Electric shock of students when touching electronics (pump power supply) with wet hands",
+    how_it_harms="Electric shock",
     uncontrolled_likelihood="3",
     uncontrolled_severity="3",
     uncontrolled_risk="9",
@@ -269,7 +267,7 @@ RA_6 = RiskAssessment(
 
 RA_7_water_tank = RiskAssessment(
     activity="Fluids laboratory",
-    hazard="Water being spilt on the floor",
+    hazard="Students slipping on water spilt on the floor",
     who_it_harms="Students",
     how_it_harms="Injuries caused by possible slipping on wet floor",
     uncontrolled_likelihood="3",
@@ -287,7 +285,7 @@ RA_7_water_tank = RiskAssessment(
 
 RA_7_water_tank_mitigation_prevention_switched = RiskAssessment(
     activity="Fluids laboratory",
-    hazard="Water being spilt on the floor",
+    hazard="Students slipping on water spilt on the floor",
     who_it_harms="Students",
     how_it_harms="Injuries caused by possible slipping on wet floor",
     uncontrolled_likelihood="3",
@@ -304,39 +302,39 @@ RA_7_water_tank_mitigation_prevention_switched = RiskAssessment(
 )
 
 
-RA_8_syringe_needle = RiskAssessment(
-    activity="Fluids laboratory",
-    hazard="Syringes with sharp needles",
-    who_it_harms="Students",
-    how_it_harms="Sharp needles can pierce the skin and cause bleeding",
-    uncontrolled_likelihood="3",
-    uncontrolled_severity="3",
-    uncontrolled_risk="9",
-    prevention="Point needle away from yourself and others",
-    mitigation="Wear lab coat and PPE", # This is both prevention and mitigation
-    controlled_likelihood="2",
-    controlled_severity="1",
-    controlled_risk="2",
-    prevention_prompt_expected_output='prevention',
-    mitigation_prompt_expected_output='mitigation',
-)
+# RA_8_syringe_needle = RiskAssessment(
+#     activity="Fluids laboratory",
+#     hazard="Syringes with sharp needles",
+#     who_it_harms="Students",
+#     how_it_harms="Sharp needles can pierce the skin and cause bleeding",
+#     uncontrolled_likelihood="3",
+#     uncontrolled_severity="3",
+#     uncontrolled_risk="9",
+#     prevention="Point needle away from yourself and others",
+#     mitigation="Wear lab coat and PPE", # This is both prevention and mitigation
+#     controlled_likelihood="2",
+#     controlled_severity="1",
+#     controlled_risk="2",
+#     prevention_prompt_expected_output='prevention',
+#     mitigation_prompt_expected_output='mitigation',
+# )
 
-RA_8_syringe_needle_mitigation_prevention_switched = RiskAssessment(
-    activity="Fluids laboratory",
-    hazard="Syringes with sharp needles",
-    who_it_harms="Students",
-    how_it_harms="Sharp needles can pierce the skin and cause bleeding",
-    uncontrolled_likelihood="3",
-    uncontrolled_severity="3",
-    uncontrolled_risk="9",
-    mitigation="Point needle away from yourself and others",
-    prevention="Wear lab coat and PPE", # This is both prevention and mitigation
-    controlled_likelihood="2",
-    controlled_severity="1",
-    controlled_risk="2",
-    prevention_prompt_expected_output='mitigation',
-    mitigation_prompt_expected_output='prevention',
-)
+# RA_8_syringe_needle_mitigation_prevention_switched = RiskAssessment(
+#     activity="Fluids laboratory",
+#     hazard="Syringes with sharp needles",
+#     who_it_harms="Students",
+#     how_it_harms="Sharp needles can pierce the skin and cause bleeding",
+#     uncontrolled_likelihood="3",
+#     uncontrolled_severity="3",
+#     uncontrolled_risk="9",
+#     mitigation="Point needle away from yourself and others",
+#     prevention="Wear lab coat and PPE", # This is both prevention and mitigation
+#     controlled_likelihood="2",
+#     controlled_severity="1",
+#     controlled_risk="2",
+#     prevention_prompt_expected_output='mitigation',
+#     mitigation_prompt_expected_output='prevention',
+# )
 
 # RA_9 = RiskAssessment(
 #     activity="Fluids laboratory",
@@ -408,9 +406,9 @@ RA_14 = RiskAssessment(
 
 RA_15 = RiskAssessment(
     activity='TPS presentation',
-    hazard='Climbing Protection Gear (Cams and Hexs)',
+    hazard='Equipment dropped on feet.',
     who_it_harms="Students and other individuals who would like to see how they work.",
-    how_it_harms="""Some equipment is heavy so could hurt if dropped on feet.""",
+    how_it_harms="""Impact injury""",
     uncontrolled_likelihood='2',
     uncontrolled_severity='1',
     uncontrolled_risk='2',
@@ -425,9 +423,9 @@ RA_15 = RiskAssessment(
 
 RA_15_mitigation_prevention_switched = RiskAssessment(
     activity='TPS presentation',
-    hazard='Climbing Protection Gear (Cams and Hexs)',
+    hazard='Equipment dropped on feet.',
     who_it_harms="Students and other individuals who would like to see how they work.",
-    how_it_harms="""Some equipment is heavy so could hurt if dropped on feet.""",
+    how_it_harms="""Impact injury""",
     uncontrolled_likelihood='2',
     uncontrolled_severity='1',
     uncontrolled_risk='2',
@@ -442,9 +440,9 @@ RA_15_mitigation_prevention_switched = RiskAssessment(
 
 RA_17 = RiskAssessment(
     activity='Bringing in a drone and two empty Li-Po batteries',
-    hazard='Sharp Edge of propellor blade on drone',
+    hazard='Sharp Edge of propellor blade is touched',
     who_it_harms='Whoever pokes the propellor blade at the tip',
-    how_it_harms='Is sharp to the touch to cause pain but not sharp enough to pierce skin',
+    how_it_harms='Cutting injury to finger or hand.',
     uncontrolled_likelihood='1',
     uncontrolled_severity='1',
     uncontrolled_risk='1',
@@ -459,9 +457,9 @@ RA_17 = RiskAssessment(
 
 RA_18 = RiskAssessment(
     activity='Bringing in a drone and two empty Li-Po batteries',
-    hazard='Li-Po battery to handle',
+    hazard='Li-Po battery could heat up and cause a fire',
     who_it_harms='Whoever is holding it',
-    how_it_harms='It may heat up with an unlikely chance of a fire',
+    how_it_harms='Burns',
     uncontrolled_likelihood='1',
     uncontrolled_severity='2',
     uncontrolled_risk='2',
@@ -476,7 +474,7 @@ RA_18 = RiskAssessment(
 
 RA_19 = RiskAssessment(
     activity='Using a spring contraption as a demonstration for a TPS presentation',
-    hazard='Slippage of weight for contraption',
+    hazard='Contraption falls onto demonstrator',
     who_it_harms='Demonstrator',
     how_it_harms='Heavy impact when falling onto demonstator, causing injury',
     uncontrolled_likelihood='3',
@@ -493,9 +491,9 @@ RA_19 = RiskAssessment(
 
 RA_20 = RiskAssessment(
     activity='Using a spring contraption as a demonstration for a TPS presentation',
-    hazard='Cut Zip tie may fly',
+    hazard='Cut Zip tie may fly and hit audience member',
     who_it_harms='Audience',
-    how_it_harms='When cut the zip tie may hit an audience member',
+    how_it_harms='Impact injury.',
     uncontrolled_likelihood='4',
     uncontrolled_severity='2',
     uncontrolled_risk='8',
@@ -510,9 +508,9 @@ RA_20 = RiskAssessment(
 
 RA_23 = RiskAssessment(
     activity='Using a mechanical pencil and breaking the pencil lead against a surface for demonstration',
-    hazard='Pencil lead breaking and becoming a projectile',
+    hazard='Pencil lead breaking and becoming a projectile and hitting someone',
     who_it_harms='Anyone present',
-    how_it_harms='May enter one\'s eye',
+    how_it_harms='Impact injury.',
     uncontrolled_likelihood='3',
     uncontrolled_severity='2',
     uncontrolled_risk='6',
@@ -527,7 +525,7 @@ RA_23 = RiskAssessment(
 
 RA_mucking_out_horse = RiskAssessment(
     activity='Mucking out a horse',
-    hazard='Horse kicks out',
+    hazard='Horse kicks rider',
     who_it_harms='Horse rider',
     how_it_harms='Impact injury',
     uncontrolled_likelihood='4',
@@ -544,7 +542,7 @@ RA_mucking_out_horse = RiskAssessment(
 
 RA_mucking_out_horse_mitigation_prevention_switched = RiskAssessment(
     activity='Mucking out a horse',
-    hazard='Horse kicks out',
+    hazard='Horse kicks rider',
     who_it_harms='Horse rider',
     how_it_harms='Impact injury',
     uncontrolled_likelihood='4',
@@ -564,18 +562,20 @@ example_risk_assessments = [
     # Commented out ones which are difficult to classify
     # RA_3_water_from_instrument, RA_3_water_from_instrument_mitiagation_prevention_switched,
     # RA_8_syringe_needle, RA_8_syringe_needle_mitigation_prevention_switched, 
-    # RA_9, RA_9_mitigation_prevention_switched,
+    # RA_9_mitigation_prevention_switched, RA_9,
 
-    # Removed because basically repeats:
+    # Repetition
+    # RA_4_with_first_aid,
     # RA_13,
 
     RA_1, RA_2_hearing_damage, 
-    RA_4, RA_5, RA_6, RA_7_water_tank,
-     RA_14, RA_15, RA_17, RA_18, RA_19, RA_20,
-    RA_23, RA_23,
+    RA_4, RA_5, RA_6, RA_7_water_tank, 
+    RA_14, RA_15, RA_17, RA_18, RA_19, RA_20,
+    RA_23,
     RA_incorrect_prevention_and_mitigation, RA_2_mitigation_prevention_switched,
-        RA_4_with_first_aid,
+   
     RA_5_mitigation_prevention_switched, RA_7_water_tank_mitigation_prevention_switched,
+    
     RA_15_mitigation_prevention_switched,
     RA_mucking_out_horse]
 

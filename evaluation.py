@@ -134,7 +134,6 @@ class Params(TypedDict):
 class Result(TypedDict):
     input_check_feedback_message: str
     question_titles: list
-    question: str
     prompt_input_objects: list
     prompts: list
     prompt_outputs: list
@@ -212,7 +211,6 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
     if input_check_feedback_message == '' and controlled_risk == 'correct' and uncontrolled_risk == 'correct':
         LLM = OpenAILLM()
         question_titles = RA.get_list_of_question_titles()
-        questions = RA.get_list_of_questions()
         prompt_input_objects = RA.get_list_of_prompt_input_objects()
         prompts = RA.get_list_of_prompts()
         prompt_outputs = RA.get_list_of_prompt_outputs(LLM)
@@ -224,7 +222,6 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
         
         return Result(input_check_feedback_message=input_check_feedback_message,
                     question_titles=question_titles, 
-                        question=questions, 
                         prompt_input_objects=prompt_input_objects,
                         prompts=prompts, 
                         prompt_outputs=prompt_outputs, 

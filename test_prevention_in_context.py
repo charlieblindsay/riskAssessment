@@ -2,7 +2,8 @@ from PromptInputs import Prevention
 from ExamplesGenerator import ExamplesGenerator
 from TestModelAccuracy import TestModelAccuracy
 from LLMCaller import OpenAILLM
-from example_risk_assessments import example_risk_assessments
+# from example_risk_assessments import example_risk_assessments
+from example_risk_assessments_copy import example_risk_assessments
 
 from example_preventions import correct_prevention_examples_list, PreventionExamplesGenerator
 from ExamplesGenerator import RiskAssessmentExamplesGenerator

@@ -83,6 +83,8 @@ class OpenAILLM(LLMCaller):
         # NOTE: Lower temperature means more deterministic output.
         self.temperature = 0.1
         self.max_tokens = 400
+        self.model_name = 'gpt-3.5-turbo'
+        # self.model_name = 'gpt-4-0125-preview'
 
     def update_api_key_from_env_file(self):
         load_dotenv()
@@ -96,7 +98,7 @@ class OpenAILLM(LLMCaller):
 
         # TODO: Vary max_tokens based on prompt and test different temperatures.
         # NOTE: Lower temperature means more deterministic output.
-        LLM_output = openai.ChatCompletion.create(model="gpt-3.5-turbo", 
+        LLM_output = openai.ChatCompletion.create(model=self.model_name, 
                                                   messages=messages, 
                                                   temperature=self.temperature, 
                                                   max_tokens=self.max_tokens)

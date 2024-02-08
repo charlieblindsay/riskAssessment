@@ -180,14 +180,6 @@ class RiskAssessment:
 
         return question_titles
     
-    def get_list_of_questions(self):
-        questions = []
-
-        for prompt_input_object in self.get_list_of_prompt_input_objects():
-            questions.append(prompt_input_object.get_question())
-        
-        return questions
-    
     def get_list_of_prompts(self):
         prompts = []
 
