@@ -90,21 +90,17 @@ class OpenAILLM(LLMCaller):
         load_dotenv()
         openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-    def get_JSON_output_from_API_call(self, prompt_input: Type[PromptInput]):
-
-        prompt = self.get_prompt_input(prompt_input=prompt_input)
-        
+    def get_JSON_output_from_API_call(self, prompt):
         messages = [{"role": "user", "content": prompt}]
 
         # TODO: Vary max_tokens based on prompt and test different temperatures.
         # NOTE: Lower temperature means more deterministic output.
-        LLM_output = openai.ChatCompletion.create(model=self.model_name, 
-                                                  messages=messages, 
-                                                  temperature=self.temperature, 
-                                                  max_tokens=self.max_tokens)
-        
+        LLM_output = openai.ChatCompletion.create(model="gpt-3.5-turbo", 
+                                            messages=messages, 
+                                            temperature=self.temperature, 
+                                            max_tokens=self.max_tokens)
         return LLM_output
     
-    def get_model_output(self, prompt_input: Type[PromptInput]):
-        LLM_output = self.get_JSON_output_from_API_call(prompt_input)
+    def get_model_output(self, prompt):
+        LLM_output = self.get_JSON_output_from_API_call(prompt)
         return LLM_output.choices[0].message["content"]

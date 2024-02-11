@@ -1,6 +1,4 @@
 from typing import Type
-import csv
-
 
 try:
     from .PromptInputs import *
@@ -15,6 +13,8 @@ class RiskAssessment:
     def __init__(self, activity, hazard, who_it_harms, how_it_harms,
                   uncontrolled_likelihood, uncontrolled_severity, uncontrolled_risk,
                  prevention, mitigation, controlled_likelihood, controlled_severity, controlled_risk,
+                 prevention_protected_clothing_expected_output, mitigation_protected_clothing_expected_output,
+                 prevention_first_aid_expected_output, mitigation_first_aid_expected_output,
                  prevention_prompt_expected_output, mitigation_prompt_expected_output):
         self.activity = activity
         self.hazard = hazard
@@ -29,8 +29,22 @@ class RiskAssessment:
         self.controlled_severity = controlled_severity
         self.controlled_risk = controlled_risk
 
+        self.prevention_protected_clothing_expected_output = prevention_protected_clothing_expected_output
+        self.mitigation_protected_clothing_expected_output = mitigation_protected_clothing_expected_output
+
+        self.prevention_first_aid_expected_output = prevention_first_aid_expected_output
+        self.mitigation_first_aid_expected_output = mitigation_first_aid_expected_output
+
         self.prevention_prompt_expected_output = prevention_prompt_expected_output
         self.mitigation_prompt_expected_output = mitigation_prompt_expected_output
+
+    def to_string(self):
+        class_name = self.__class__.__name__
+        if hasattr(self, '__dict__'):
+            attributes = ', '.join([f"{key}={value}" for key, value in self.__dict__.items()])
+            return f"{class_name}({attributes})"
+        else:
+            return f"{class_name}()"
 
     def get_word_fields(self):
         return ['activity',
@@ -76,7 +90,7 @@ class RiskAssessment:
 
         for word_field_name in self.get_word_fields():
             if not self.does_string_represent_words(getattr(self, word_field_name)):
-                formatted_word_field_name = word_field_name.split('_', ' ').title()
+                formatted_word_field_name = word_field_name.replace('_', ' ').title()
                 word_fields_incorrect.append(formatted_word_field_name)
         
         return word_fields_incorrect
@@ -124,6 +138,34 @@ class RiskAssessment:
         return WhoItHarmsInContext(who_it_harms=self.who_it_harms,
                             activity=self.activity)
     
+    def get_prevention_protective_clothing_input(self):
+        return ProtectiveClothing(activity=self.activity,
+                                  hazard=self.hazard,
+                                  how_it_harms=self.how_it_harms,
+                                  who_it_harms=self.who_it_harms,
+                                  control_measure=self.prevention)
+    
+    def get_mitigation_protective_clothing_input(self):
+        return ProtectiveClothing(activity=self.activity,
+                                  hazard=self.hazard,
+                                  how_it_harms=self.how_it_harms,
+                                  who_it_harms=self.who_it_harms,
+                                  control_measure=self.mitigation)
+    
+    def get_prevention_first_aid_input(self):
+        return FirstAid(activity=self.activity,
+                        hazard=self.hazard,
+                        how_it_harms=self.how_it_harms,
+                        who_it_harms=self.who_it_harms,
+                        control_measure=self.prevention)
+    
+    def get_mitigation_first_aid_input(self):
+        return FirstAid(activity=self.activity,
+                        hazard=self.hazard,
+                        how_it_harms=self.how_it_harms,
+                        who_it_harms=self.who_it_harms,
+                        control_measure=self.mitigation)
+    
     def get_prevention_input(self):
         return Prevention(prevention=self.prevention,
                           activity=self.activity,
@@ -137,6 +179,8 @@ class RiskAssessment:
                           hazard=self.hazard,
                           how_it_harms=self.how_it_harms,
                           who_it_harms=self.who_it_harms)
+
+
     
     def check_that_risk_equals_likelihood_times_severity(self, likelihood, severity, risk):
         try:
@@ -163,89 +207,110 @@ class RiskAssessment:
                                                                 self.controlled_risk)
     
     # TODO: Add ability to see prompt output percentages - might be possible for LLMs other than GPT-3
-    
-    def get_list_of_prompt_input_objects(self):
+
+    def get_list_of_prompt_input_objects_for_first_3_prompts(self):
         return [self.get_activity_input(),
                 self.get_how_it_harms_in_context_input(),
                 self.get_who_it_harms_in_context_input(),
-                self.get_prevention_input(),
-                self.get_mitigation_input()
+                # self.get_protective_clothing_input(),
+                # self.get_first_aid_input(),
+                # self.get_prevention_input(),
+                # self.get_mitigation_input()
                 ]
-    
-    def get_list_of_question_titles(self):
-        question_titles = []
-        
-        for prompt_input_object in self.get_list_of_prompt_input_objects():
-            question_titles.append(prompt_input_object.get_question_title())
 
-        return question_titles
-    
-    def get_list_of_prompts(self):
-        prompts = []
-
-        for prompt_input_object in self.get_list_of_prompt_input_objects():
-            prompts.append(prompt_input_object.generate_prompt())
-
-        return prompts
-    
-    def get_list_of_prompt_outputs(self, LLM_caller: Type[LLMCaller]):
-        prompt_outputs = []
-
-        for prompt_input_object in self.get_list_of_prompt_input_objects():
-            prompt_outputs.append(LLM_caller.get_model_output(prompt_input_object))
-        
-        return prompt_outputs
-    
-    def get_list_of_regex_matches(self, prompt_outputs):
+    def get_prompt_output_and_pattern_matched(self, prompt_input_object: Type[PromptInput], LLM_caller: Type[LLMCaller]):
         regex_pattern_matcher = RegexPatternMatcher()
-
-        regex_matches = []
-
-        prompt_inputs = self.get_list_of_prompt_input_objects()
-
-        for i in range(len(prompt_inputs)):
-            pattern_matching_method = getattr(regex_pattern_matcher, prompt_inputs[i].pattern_matching_method)
-
-            regex_match = pattern_matching_method(prompt_outputs[i])
-            regex_matches.append(regex_match)
         
-        return regex_matches
+        prompt_output = LLM_caller.get_model_output(prompt_input_object.generate_prompt())
+        pattern_matching_method = getattr(regex_pattern_matcher, prompt_input_object.pattern_matching_method)
+        
+        pattern_matched = pattern_matching_method(prompt_output)
+
+        return prompt_output, pattern_matched
     
-    def get_list_of_shortform_feedback_objects(self):
-        shortform_feedback_objects = []
+    def get_shortform_feedback_from_regex_match(self, prompt_input_object: Type[PromptInput], pattern_matched):
+        
+        shortform_feedback_object = prompt_input_object.get_shortform_feedback()
+        if pattern_matched in prompt_input_object.labels_indicating_correct_input:
+            return shortform_feedback_object.positive_feedback
+        else:
+            return shortform_feedback_object.negative_feedback
 
-        for prompt_input_object in self.get_list_of_prompt_input_objects():
-            shortform_feedback_objects.append(prompt_input_object.get_shortform_feedback())
 
-        return shortform_feedback_objects
+    # def get_list_of_fields_checked(self):
+    #     fields_checked = []
+        
+    #     for prompt_input_object in self.get_list_of_prompt_input_objects():
+    #         fields_checked.append(prompt_input_object.get_field_checked())
 
-    def get_list_of_shortform_feedback_from_regex_matches(self, regex_matches):
-        list_of_shortform_feedback = []
-
-        prompt_inputs = self.get_list_of_prompt_input_objects()
-
-        shortform_feedback_objects = self.get_list_of_shortform_feedback_objects()
-
-        for i in range(len(regex_matches)):
-            if regex_matches[i] in prompt_inputs[i].correct_matched_patterns:
-                list_of_shortform_feedback.append(shortform_feedback_objects[i].positive_feedback)
-            else:
-                list_of_shortform_feedback.append(shortform_feedback_objects[i].negative_feedback)
-            
-        return list_of_shortform_feedback
+    #     return fields_checked
     
-    def get_booleans_indicating_which_prompts_need_feedback(self, regex_matches):
-        booleans_indicating_which_prompts_need_feedback = []
+    # def get_list_of_prompts(self):
+    #     prompts = []
 
-        prompt_inputs = self.get_list_of_prompt_input_objects()
+    #     for prompt_input_object in self.get_list_of_prompt_input_objects():
+    #         prompts.append(prompt_input_object.generate_prompt())
 
-        for i in range(len(regex_matches)):
-            if regex_matches[i] in prompt_inputs[i].correct_matched_patterns:
-                booleans_indicating_which_prompts_need_feedback.append(False)
-            else:
-                booleans_indicating_which_prompts_need_feedback.append(True)
+    #     return prompts
+    
+    # def get_list_of_prompt_outputs(self, LLM_caller: Type[LLMCaller]):
+    #     prompt_outputs = []
+
+    #     for prompt_input_object in self.get_list_of_prompt_input_objects():
+    #         prompt_outputs.append(LLM_caller.get_model_output(prompt_input_object.generate_prompt()))
+        
+    #     return prompt_outputs
+    
+    # def get_list_of_regex_matches(self, prompt_outputs):
+    #     regex_pattern_matcher = RegexPatternMatcher()
+
+    #     regex_matches = []
+
+    #     prompt_inputs = self.get_list_of_prompt_input_objects()
+
+    #     for i in range(len(prompt_inputs)):
+    #         pattern_matching_method = getattr(regex_pattern_matcher, prompt_inputs[i].pattern_matching_method)
+
+    #         regex_match = pattern_matching_method(prompt_outputs[i])
+    #         regex_matches.append(regex_match)
+        
+    #     return regex_matches
+    
+    # def get_list_of_shortform_feedback_objects(self):
+    #     shortform_feedback_objects = []
+
+    #     for prompt_input_object in self.get_list_of_prompt_input_objects():
+    #         shortform_feedback_objects.append(prompt_input_object.get_shortform_feedback())
+
+    #     return shortform_feedback_objects
+
+    # def get_list_of_shortform_feedback_from_regex_matches(self, regex_matches):
+    #     list_of_shortform_feedback = []
+
+    #     prompt_inputs = self.get_list_of_prompt_input_objects()
+
+    #     shortform_feedback_objects = self.get_list_of_shortform_feedback_objects()
+
+    #     for i in range(len(regex_matches)):
+    #         if regex_matches[i] in prompt_inputs[i].labels_indicating_correct_input:
+    #             list_of_shortform_feedback.append(shortform_feedback_objects[i].positive_feedback)
+    #         else:
+    #             list_of_shortform_feedback.append(shortform_feedback_objects[i].negative_feedback)
             
-        return booleans_indicating_which_prompts_need_feedback
+    #     return list_of_shortform_feedback
+    
+    # def get_booleans_indicating_which_prompts_need_feedback(self, regex_matches):
+    #     booleans_indicating_which_prompts_need_feedback = []
+
+    #     prompt_inputs = self.get_list_of_prompt_input_objects()
+
+    #     for i in range(len(regex_matches)):
+    #         if regex_matches[i] in prompt_inputs[i].labels_indicating_correct_input:
+    #             booleans_indicating_which_prompts_need_feedback.append(False)
+    #         else:
+    #             booleans_indicating_which_prompts_need_feedback.append(True)
+            
+    #     return booleans_indicating_which_prompts_need_feedback
     
     def are_all_multiplications_correct(self)->bool:
         return self.check_uncontrolled_risk() == 'correct' and self.check_controlled_risk() == 'correct'
@@ -255,7 +320,7 @@ class RiskAssessment:
         prompt_inputs = self.get_list_of_prompt_input_objects()
 
         for i in range(len(regex_matches)):
-            if regex_matches[i] != prompt_inputs[i].correct_matched_patterns:
+            if regex_matches[i] != prompt_inputs[i].labels_indicating_correct_input:
                 return False
         
         return True
