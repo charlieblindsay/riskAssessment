@@ -203,12 +203,12 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
             longform_feedback = prompt_input_object.get_longform_feedback(prompt_output=prompt_output)
             
             feedback_header_to_add = f''' 
-            ## Feedback for Input: {field}\n
+            \n\n\n## Feedback for Input: {field}\n\n\n
             '''
 
             feedback_to_add = f'''
-            - **Feedback**: {shortform_feedback}\n
-            - **Explanation**: {longform_feedback}\n'''
+            \n\n\n\n##### Feedback: {shortform_feedback}\n\n\n\n
+            \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n'''
             
             if pattern in prompt_input_object.labels_indicating_correct_input:
                 feedback_for_correct_answers += feedback_header_to_add
@@ -217,7 +217,7 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
             else:
                 is_everything_correct = False
 
-                feedback_to_add += f'''- **Recommendation**: Please look at the definition of the {field} input field{'s' if field in ['Hazard & How it harms', 'Prevention and Mitigation'] else ''} and the example risk assessment for assistance.'''
+                feedback_to_add += f'''\n\n\n\n##### Recommendation: Please look at the definition of the {field} input field{'s' if field in ['Hazard & How it harms', 'Prevention and Mitigation'] else ''} and the example risk assessment for assistance.\n\n\n\n'''
 
                 feedback_for_incorrect_answers += feedback_header_to_add
                 feedback_for_incorrect_answers += feedback_to_add
@@ -225,7 +225,7 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
                 break
         
         # PREVENTION CHECKS
-        feedback_header = f''' ## Feedback for Input: Prevention'''
+        feedback_header = f'''\n\n\n## Feedback for Input: Prevention\n\n\n'''
 
         if is_everything_correct == True:
             prevention_protective_clothing_prompt_input = RA.get_prevention_protective_clothing_input()
@@ -238,9 +238,9 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
 
                 feedback_for_incorrect_answers += f'''
                 {feedback_header}
-                - **Feedback**: {shortform_feedback}\n
-                - **Explanation**: {longform_feedback}\n
-                - **Recommendation**: Please look at the definition of a Prevention and Mitigation for assistance.'''
+                \n\n\n\n##### Feedback: {shortform_feedback.negative_feedback}\n\n\n\n
+                \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n
+                \n\n\n\n##### Recommendation: Please look at the definition of a Prevention and Mitigation for assistance.\n\n\n\n'''
 
                 is_everything_correct = False
             
@@ -256,9 +256,9 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
 
                     feedback_for_incorrect_answers += f'''
                     {feedback_header}
-                    - **Feedback**: {shortform_feedback}\n
-                    - **Explanation**: {longform_feedback}\n
-                    - **Recommendation**: Please look at the definition of a Prevention and Mitigation for assistance.'''
+                    \n\n\n\n##### Feedback: {shortform_feedback.negative_feedback}\n\n\n\n
+                    \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n
+                    \n\n\n\n##### Recommendation: Please look at the definition of a Prevention and Mitigation for assistance.\n\n\n\n'''
 
                     is_everything_correct = False
                 
@@ -277,22 +277,21 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
                     if prevention_pattern == 'mitigation' or prevention_pattern == 'neither':
                         feedback_for_incorrect_answers += f'''
                         {feedback_header}
-                        - **Feedback**: {shortform_feedback_object.negative_feedback}\n
-                        - **Explanation**: {longform_feedback}\n
-                        - **Recommendation**: Please look at the definition of a Prevention {'and Mitigation' if prevention_pattern == 'mitigation' else ''} for assistance.\n'''
+                        \n\n\n\n##### Feedback: {shortform_feedback_object.negative_feedback}\n\n\n\n
+                        \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n
+                        \n\n\n\n##### Recommendation: Please look at the definition of a Prevention {'and Mitigation' if prevention_pattern == 'mitigation' else ''} for assistance.\n\n\n\n'''
 
                         is_everything_correct = False
                     
                     if prevention_pattern == 'prevention' or prevention_pattern == 'both':
                         feedback_for_correct_answers += f'''
                         {feedback_header}
-                        - **Feedback**: {shortform_feedback_object.positive_feedback}\n
-                        - **Explanation**: {longform_feedback}\n'''
+                        \n\n\n\n##### Feedback: {shortform_feedback_object.positive_feedback}\n\n\n\n
+                        \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n'''
 
         # MITIGATION CHECKS
-        feedback_header = f''' ## Feedback for Input: Mitigation'''
+            feedback_header = f'''\n\n\n## Feedback for Input: Mitigation\n\n\n'''
 
-        if is_everything_correct == True:
             mitigation_protective_clothing_prompt_input = RA.get_mitigation_protective_clothing_input()
             mitigation_protective_clothing_prompt_output, mitigation_protective_clothing_pattern = RA.get_prompt_output_and_pattern_matched(mitigation_protective_clothing_prompt_input, LLM)
 
@@ -303,8 +302,8 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
             if mitigation_protective_clothing_pattern == True:
                 feedback_for_correct_answers += f'''
                 {feedback_header}
-                - **Feedback**: {shortform_feedback.positive_feedback}\n
-                - **Explanation**: {longform_feedback}\n'''
+                \n\n\n\n##### Feedback: {shortform_feedback.positive_feedback}\n\n\n\n
+                \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n'''
             
             # Indicating that the mitigation is not a protective clothing
             else:
@@ -319,8 +318,8 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
                         
                     feedback_for_correct_answers += f'''
                     {feedback_header}
-                    - **Feedback**: {shortform_feedback.positive_feedback}\n
-                    - **Explanation**: {longform_feedback}\n'''
+                    \n\n\n\n##### Feedback: {shortform_feedback.positive_feedback}\n\n\n\n
+                    \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n'''
 
                 # Indicating that the mitigation is neither a protective clothing or an example of first aid
                 # This checks whether the inputted mitigation is a prevention or a mitigation 
@@ -331,8 +330,8 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
                     if mitigation_pattern == 'mitigation' or mitigation_pattern == 'both':
                         feedback_for_correct_answers += f'''
                         {feedback_header}
-                        - **Feedback**: {shortform_feedback.positive_feedback}\n
-                        - **Explanation**: {longform_feedback}\n'''
+                        \n\n\n\n##### Feedback: {shortform_feedback.positive_feedback}\n\n\n\n
+                        \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n'''
 
                     if mitigation_pattern == 'prevention':
                         longform_feedback = mitigation_prompt_input.get_longform_feedback(prompt_output=mitigation_prompt_output, pattern_to_search_for='Prevention Explanation',lookahead_assertion='Mitigation')
@@ -340,14 +339,18 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
                     if mitigation_pattern == 'prevention' or mitigation_pattern == 'neither':
                         feedback_for_incorrect_answers += f'''
                         {feedback_header}
-                        - **Feedback**: {shortform_feedback.negative_feedback}\n
-                        - **Explanation**: {longform_feedback}\n
-                        - **Recommendation**: Please look at the definition of a Mitigation {'and Prevention' if mitigation_pattern == 'prevention' else ''} for assistance.\n'''
+                        \n\n\n\n##### Feedback: {shortform_feedback.negative_feedback}\n\n\n\n
+                        \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n
+                        \n\n\n\n##### Recommendation: Please look at the definition of a Mitigation {'and Prevention' if mitigation_pattern == 'prevention' else ''} for assistance.\n\n\n\n'''
 
                         is_everything_correct = False
+        
+        if feedback_for_incorrect_answers == '# Feedback for Incorrect Answers\n':
+            feedback_for_incorrect_answers = '# Congratulations! All your answers are correct!'
 
         feedback_for_correct_answers += f'''
-        - Uncontrolled risk multiplication is: {uncontrolled_risk}
-        - Controlled risk multiplication is: {controlled_risk}'''
+        \n\n\n## Feedback for Risk Multiplications {field}\n\n\n\n
+        \n\n\n\n##### Uncontrolled risk multiplication is: {uncontrolled_risk}\n\n\n\n
+        \n\n\n\n##### Controlled risk multiplication is: {controlled_risk}\n\n\n\n'''
 
         return Result(is_correct=is_everything_correct, feedback=feedback_for_incorrect_answers + '\n\n\n\n\n' + feedback_for_correct_answers)

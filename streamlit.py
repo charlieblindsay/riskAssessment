@@ -238,7 +238,7 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
 
                 feedback_for_incorrect_answers += f'''
                 {feedback_header}
-                \n\n\n\n##### Feedback: {shortform_feedback}\n\n\n\n
+                \n\n\n\n##### Feedback: {shortform_feedback.negative_feedback}\n\n\n\n
                 \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n
                 \n\n\n\n##### Recommendation: Please look at the definition of a Prevention and Mitigation for assistance.\n\n\n\n'''
 
@@ -256,7 +256,7 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
 
                     feedback_for_incorrect_answers += f'''
                     {feedback_header}
-                    \n\n\n\n##### Feedback: {shortform_feedback}\n\n\n\n
+                    \n\n\n\n##### Feedback: {shortform_feedback.negative_feedback}\n\n\n\n
                     \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n
                     \n\n\n\n##### Recommendation: Please look at the definition of a Prevention and Mitigation for assistance.\n\n\n\n'''
 
@@ -290,9 +290,8 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
                         \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n'''
 
         # MITIGATION CHECKS
-        feedback_header = f'''\n\n\n## Feedback for Input: Mitigation\n\n\n'''
+            feedback_header = f'''\n\n\n## Feedback for Input: Mitigation\n\n\n'''
 
-        if is_everything_correct == True:
             mitigation_protective_clothing_prompt_input = RA.get_mitigation_protective_clothing_input()
             mitigation_protective_clothing_prompt_output, mitigation_protective_clothing_pattern = RA.get_prompt_output_and_pattern_matched(mitigation_protective_clothing_prompt_input, LLM)
 
@@ -350,7 +349,7 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
             feedback_for_incorrect_answers = '# Congratulations! All your answers are correct!'
 
         feedback_for_correct_answers += f'''
-        \n\n\n## Feedback for Risk Multiplications {field}\n\n\n\n
+        \n\n\n## Feedback for Risk Multiplications\n\n\n\n
         \n\n\n\n##### Uncontrolled risk multiplication is: {uncontrolled_risk}\n\n\n\n
         \n\n\n\n##### Controlled risk multiplication is: {controlled_risk}\n\n\n\n'''
 
@@ -445,19 +444,19 @@ with st.form('risk_assessment'):
     # controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)', value='1')
     # submit_button = st.form_submit_button("Submit")
 
-    # activity = st.text_input('Activity', value='Mucking out horse\'s stable')
-    # hazard = st.text_input('Hazard', value="Horse kicking")
-    # how_it_harms = st.text_input('How does the hazard cause harm?', value="Impact injuries")
-    # who_it_harms = st.text_input('Who does the hazard harm?', value="Horse riders")
-    # uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)', value='2')
-    # uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)', value='2')
-    # uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)', value='4')
-    # prevention = st.text_input('Prevention', value="Do not stand behind the horse")
-    # mitigation=st.text_input('Mitigation', value="""Wear a helmet and body protector when mucking out the horse's stable""")
-    # controlled_likelihood = st.text_input('Controlled Likelihood (enter an integer between 1 and 5)', value='1')
-    # controlled_severity = st.text_input('Controlled Severity (enter an integer between 1 and 5)', value='1')
-    # controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)', value='1')
-    # submit_button = st.form_submit_button("Submit")
+    activity = st.text_input('Activity', value='Mucking out horse\'s stable')
+    hazard = st.text_input('Hazard', value="Horse kicking")
+    how_it_harms = st.text_input('How does the hazard cause harm?', value="Impact injuries")
+    who_it_harms = st.text_input('Who does the hazard harm?', value="Horse riders")
+    uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)', value='2')
+    uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)', value='2')
+    uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)', value='4')
+    prevention = st.text_input('Prevention', value="Do not stand behind the horse")
+    mitigation=st.text_input('Mitigation', value="""Wear a helmet and body protector when mucking out the horse's stable""")
+    controlled_likelihood = st.text_input('Controlled Likelihood (enter an integer between 1 and 5)', value='1')
+    controlled_severity = st.text_input('Controlled Severity (enter an integer between 1 and 5)', value='1')
+    controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)', value='1')
+    submit_button = st.form_submit_button("Submit")
                       
     # activity = st.text_input('Activity', value='Fluids laboratory')
     # hazard = st.text_input('Hazard', value="Ink spillage")
@@ -473,19 +472,19 @@ with st.form('risk_assessment'):
     # controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)', value='1')
     # submit_button = st.form_submit_button("Submit")
 
-    activity = st.text_input('Activity')
-    hazard = st.text_input('Hazard')
-    how_it_harms = st.text_input('How does the hazard cause harm?')
-    who_it_harms = st.text_input('Who does the hazard harm?')
-    uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)') 
-    uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)')
-    uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)') 
-    prevention = st.text_input('Prevention')
-    mitigation = st.text_input('Mitigation')
-    controlled_likelihood = st.text_input('Controlled Likelihood (enter an integer between 1 and 5)') 
-    controlled_severity = st.text_input('Controlled Severity (enter an integer between 1 and 5)')
-    controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)')
-    submit_button = st.form_submit_button("Submit")
+    # activity = st.text_input('Activity')
+    # hazard = st.text_input('Hazard')
+    # how_it_harms = st.text_input('How does the hazard cause harm?')
+    # who_it_harms = st.text_input('Who does the hazard harm?')
+    # uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)') 
+    # uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)')
+    # uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)') 
+    # prevention = st.text_input('Prevention')
+    # mitigation = st.text_input('Mitigation')
+    # controlled_likelihood = st.text_input('Controlled Likelihood (enter an integer between 1 and 5)') 
+    # controlled_severity = st.text_input('Controlled Severity (enter an integer between 1 and 5)')
+    # controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)')
+    # submit_button = st.form_submit_button("Submit")
 
     # TODO: Add try except for when they are not connected to the internet.
     if submit_button:
