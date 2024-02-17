@@ -433,7 +433,7 @@ st.subheader('Overview: This exercise gives feedback on Risk Assessments.')
 st.title('Instructions')
 st.markdown('''
             1. Think of an activity that involves risk, e.g. cooking, playing sports, driving, cycling, or crossing the road.
-            2. Read the definitions of input fields and the example risk assessment below.
+            2. In the "Helpful Resources" below, read the "Input field definitions" and the "Example Risk Assessment".
             3. Fill out the "Risk Assessment Fields" exercise.
                 - **NOTE: You should only include one example in each field, e.g. for the 'Mitigation' field, only list one mitigation, e.g. "Wear a helmet"**
             4. When you are finished, you can give feedback to me by filling out the feedback form at the bottom. Many Thanks, Charlie''')
