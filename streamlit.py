@@ -630,6 +630,7 @@ with st.expander('Please fill out this form so I can improve the Exercise!'):
                     '\n\n\n'.join(st.session_state.feedback),
                     is_feedback_accurate,
                     why_not_accurate,
+                    is_feedback_helpful,
                     is_feedback_specific,
                     why_not_specific,
                     is_feedback_constructive,
