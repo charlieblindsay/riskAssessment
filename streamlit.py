@@ -578,14 +578,16 @@ st.title('Your feedback for me')
 with st.expander('Please fill out this form so I can improve the Exercise!'):
     with st.form('feedback_from_user'):
         options = ['Yes', 'No']
+        option_likert = ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree']
         name = st.text_input('1/7) First Name')
-        is_feedback_correct = st.radio('2/7) Is the feedback you received correct?', options=options)
-        why_not_correct = st.text_input('If you answered No, why is the feedback incorrect?')
-        is_feedback_specific  = st.radio('3/7) Is the feedback you received specific, i.e. tailored specifically to the answers you gave?', options=options)
+        is_feedback_accurate = st.radio('2/7) Is the feedback you received accurate?', options=options)
+        why_not_accurate = st.text_input('If you answered No, why is the feedback accurate?')
+        is_feedback_helpful = st.radio('3/7) Is the feedback you received helpful?', options=option_likert)
+        is_feedback_specific  = st.radio('4/7) Is the feedback you received specific, i.e. tailored specifically to the answers you gave?', options=options)
         why_not_specific = st.text_input('If you answered No, why is the feedback not specific?')
-        is_feedback_constructive = st.radio('4/7) Is the feedback you received constructive, i.e. helped you understand why an answer was wrong and made helpful suggestions on how to improve your answer.', options=options)
+        is_feedback_constructive = st.radio('5/7) Is the feedback you received constructive, i.e. helped you understand why an answer was wrong and made helpful suggestions on how to improve your answer.', options=options)
         why_not_constructive = st.text_input('If you answered No, why is the feedback not constructive?')
-        are_instructions_clear = st.radio('5/7) Do you think the instructions given for this exercise were clear?', options=options)
+        are_instructions_clear = st.radio('6/7) Do you think the instructions given for this exercise were clear?', options=options)
         why_not_clear = st.text_input('If you answered No, why are the instructions not clear?')
         # st.subheader('Learning Objectives:')
         # 'On completing this Risk Assessment Exercise, students should be able to:'
@@ -626,16 +628,14 @@ with st.expander('Please fill out this form so I can improve the Exercise!'):
                     name,
                     RiskAssessment_string,
                     '\n\n\n'.join(st.session_state.feedback),
-                    is_feedback_correct,
-                    why_not_correct,
+                    is_feedback_accurate,
+                    why_not_accurate,
                     is_feedback_specific,
                     why_not_specific,
                     is_feedback_constructive,
                     why_not_constructive,
                     are_instructions_clear,
                     why_not_clear,
-                    learning_outcomes,
-                    why_not_learning_outcomes,
                     general_feedback
                     ])
                 st.write('Thank you very much for your feedback! It will be taken on board!')
