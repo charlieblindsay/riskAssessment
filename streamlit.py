@@ -135,7 +135,34 @@ class Result(TypedDict):
     is_correct: bool
     feedback: str
 
-def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
+# Add option in RiskAssessment to specify whether prevention is misclassified as mitigation, 
+# is not a suitable prevention, or mitigation is misclassified as prevention, or is not a suitable mitigation
+
+# TODO: Functions can make this code shorter.
+ 
+from typing import Any, TypedDict
+import numpy as np
+
+try:
+    from .PromptInputs import *
+except:
+    from PromptInputs import *
+
+try:
+    from RiskAssessment import RiskAssessment
+    from LLMCaller import LLMWithCandidateLabels, LLMWithGeneratedText
+except:
+    from .RiskAssessment import RiskAssessment
+    from .LLMCaller import LLMWithCandidateLabels, LLMWithGeneratedText, OpenAILLM
+
+class Params(TypedDict):
+    pass
+
+class Result(TypedDict):
+    is_correct: bool
+    feedback: str
+
+def evaluation_function(response: Any, answer: Any, params: Params) -> Result:
     """
     Function used to evaluate a student response.
     ---
@@ -159,251 +186,267 @@ def evaluation_function(response: Any, answer: Any, params: Any) -> Result:
     to output the evaluation response.
     """
 
-    activity, hazard, how_it_harms, who_it_harms, uncontrolled_likelihood, uncontrolled_severity, uncontrolled_risk, prevention, mitigation, controlled_likelihood, controlled_severity, controlled_risk = np.array(response).flatten()
-
-    RA = RiskAssessment(activity=activity, hazard=hazard, who_it_harms=who_it_harms, how_it_harms=how_it_harms,
-                        uncontrolled_likelihood=uncontrolled_likelihood, uncontrolled_severity=uncontrolled_severity,
-                        uncontrolled_risk=uncontrolled_risk, prevention=prevention, mitigation=mitigation,
-                        controlled_likelihood=controlled_likelihood, controlled_severity=controlled_severity, controlled_risk=controlled_risk,
-                        prevention_prompt_expected_output='prevention', mitigation_prompt_expected_output='mitigation',
-                        prevention_protected_clothing_expected_output=False,
-                        mitigation_protected_clothing_expected_output=False,
-                        prevention_first_aid_expected_output=False,
-                        mitigation_first_aid_expected_output=False,
-                        )
-    
-    input_check_feedback_message = RA.get_input_check_feedback_message()
-    controlled_risk = RA.check_controlled_risk()
-    uncontrolled_risk = RA.check_uncontrolled_risk()
-
-    if input_check_feedback_message != '':
-        return Result(is_correct=False,
-                    feedback=f'Feedback: \n\n {input_check_feedback_message}')
-    
-    if input_check_feedback_message == '' and controlled_risk != 'correct' or uncontrolled_risk != 'correct':
-        return Result(is_correct=False,
-                      feedback=f'Feedback: \n\n Uncontrolled risk is: {controlled_risk}\n\nUncontrolled risk is {uncontrolled_risk}')
+    if params["is_feedback_text"] == True:
+        return Result(is_correct=True, feedback="Thank you for your feedback")
     
     else:
-        LLM = OpenAILLM()
+        activity, hazard, how_it_harms, who_it_harms, uncontrolled_likelihood, uncontrolled_severity, uncontrolled_risk, prevention, mitigation, controlled_likelihood, controlled_severity, controlled_risk = np.array(response).flatten()
 
-        feedback_for_incorrect_answers = '\n\n\n\n# Feedback for Incorrect Answers\n\n\n\n'
-        feedback_for_correct_answers = '\n\n\n\n# Feedback for Correct Answers\n\n\n\n'
-
-        is_everything_correct = True
-
-        first_3_prompt_input_objects = RA.get_list_of_prompt_input_objects_for_first_3_prompts()
-
-        for prompt_input_object in first_3_prompt_input_objects:
-            prompt_output, pattern = RA.get_prompt_output_and_pattern_matched(prompt_input_object, LLM)
-            shortform_feedback = RA.get_shortform_feedback_from_regex_match(prompt_input_object, pattern)
-
-            field = prompt_input_object.get_field_checked()
-
-            longform_feedback = prompt_input_object.get_longform_feedback(prompt_output=prompt_output)
-            
-            feedback_header_to_add = f''' 
-            \n\n\n## Feedback for Input: {field}\n\n\n
-            '''
-
-            feedback_to_add = f'''
-            \n\n\n\n##### Feedback: {shortform_feedback}\n\n\n\n
-            \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n'''
-            
-            if pattern in prompt_input_object.labels_indicating_correct_input:
-                feedback_for_correct_answers += feedback_header_to_add
-                feedback_for_correct_answers += feedback_to_add + '\n\n'
-            
-            else:
-                is_everything_correct = False
-                recommendation = prompt_input_object.get_recommendation()
-
-                feedback_to_add += f'''\n\n\n\n##### Recommendation: {recommendation}'''
-
-                feedback_for_incorrect_answers += feedback_header_to_add
-                feedback_for_incorrect_answers += feedback_to_add
-
-                break
+        RA = RiskAssessment(activity=activity, hazard=hazard, who_it_harms=who_it_harms, how_it_harms=how_it_harms,
+                            uncontrolled_likelihood=uncontrolled_likelihood, uncontrolled_severity=uncontrolled_severity,
+                            uncontrolled_risk=uncontrolled_risk, prevention=prevention, mitigation=mitigation,
+                            controlled_likelihood=controlled_likelihood, controlled_severity=controlled_severity, controlled_risk=controlled_risk,
+                            prevention_prompt_expected_output='prevention', mitigation_prompt_expected_output='mitigation',
+                            prevention_protected_clothing_expected_output=False,
+                            mitigation_protected_clothing_expected_output=False,
+                            prevention_first_aid_expected_output=False,
+                            mitigation_first_aid_expected_output=False,
+                            harm_caused_in_how_it_harms='',
+                            hazard_event="",
+                            )
         
-        # PREVENTION CHECKS
-        feedback_header = f'''\n\n\n## Feedback for Input: Prevention\n\n\n'''
+        input_check_feedback_message = RA.get_input_check_feedback_message()
+        controlled_risk = RA.check_controlled_risk()
+        uncontrolled_risk = RA.check_uncontrolled_risk()
 
-        if is_everything_correct == True:
-            prevention_protective_clothing_prompt_input = RA.get_prevention_protective_clothing_input()
-            prevention_protective_clothing_prompt_output, prevention_protective_clothing_pattern = RA.get_prompt_output_and_pattern_matched(prevention_protective_clothing_prompt_input, LLM)
+        if input_check_feedback_message != '':
+            return Result(is_correct=False,
+                        feedback=f'Feedback: \n\n {input_check_feedback_message}')
+        
+        if input_check_feedback_message == '' and controlled_risk != 'correct' or uncontrolled_risk != 'correct':
+            return Result(is_correct=False,
+                        feedback=f'Feedback: \n\n Uncontrolled risk is: {controlled_risk}\n\nUncontrolled risk is {uncontrolled_risk}')
+        
+        else:
+            LLM = OpenAILLM()
+
+            feedback_for_incorrect_answers = '\n\n\n\n# Feedback for Incorrect Answers\n\n\n\n'
+            feedback_for_correct_answers = '\n\n\n\n# Feedback for Correct Answers\n\n\n\n'
+
+            is_everything_correct = True
             
-            # Indicating that the prevention is a protective clothing so is actually a mitigation
-            if prevention_protective_clothing_pattern == True:
-                shortform_feedback = prevention_protective_clothing_prompt_input.get_shortform_feedback(feedback_type='negative')
-                longform_feedback = prevention_protective_clothing_prompt_input.get_longform_feedback()
-                recommendation = prevention_protective_clothing_prompt_input.get_recommendation()
+            if is_everything_correct == True:
+                first_3_prompt_input_objects = RA.get_list_of_prompt_input_objects_for_first_3_prompts()
 
-                feedback_for_incorrect_answers += f'''
-                {feedback_header}
-                \n\n\n\n##### Feedback: {shortform_feedback}\n\n\n\n
-                \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n
-                \n\n\n\n##### Recommendation: {recommendation}\n\n\n\n'''
+                for prompt_input_object in first_3_prompt_input_objects:
+                    prompt_output, pattern = RA.get_prompt_output_and_pattern_matched(prompt_input_object, LLM)
+                    shortform_feedback = RA.get_shortform_feedback_from_regex_match(prompt_input_object, pattern)
 
-                is_everything_correct = False
+                    field = prompt_input_object.get_field_checked()
+                    
+                    feedback_header_to_add = f''' 
+                    \n\n\n## Feedback for Input: {field}\n\n\n
+                    '''
+
+                    feedback_to_add = f'''
+                    \n\n\n\n#### Feedback: {shortform_feedback}\n\n\n\n'''
+                    
+                    if pattern in prompt_input_object.labels_indicating_correct_input:
+                        feedback_for_correct_answers += feedback_header_to_add
+                        feedback_for_correct_answers += feedback_to_add + '\n\n'
+                    
+                    else:
+
+                        longform_feedback = prompt_input_object.get_longform_feedback(prompt_output=prompt_output)
+                        
+                        if longform_feedback != '':
+                            feedback_to_add += f'''\n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n'''
+                        
+                        is_everything_correct = False
+                        recommendation = prompt_input_object.get_recommendation()
+
+                        feedback_to_add += f'''\n\n\n\n#### Recommendation: {recommendation}'''
+
+                        feedback_for_incorrect_answers += feedback_header_to_add
+                        feedback_for_incorrect_answers += feedback_to_add
+
+                        break
             
-            # Indicating that the prevention is not a protective clothing
-            else:
-                prevention_first_aid_prompt_input = RA.get_prevention_first_aid_input()
-                prevention_first_aid_prompt_output, prevention_first_aid_pattern = RA.get_prompt_output_and_pattern_matched(prevention_first_aid_prompt_input, LLM)
+            # PREVENTION CHECKS
+            if is_everything_correct == True:
+                feedback_header = f'''\n\n\n## Feedback for Input: Prevention\n\n\n'''
 
-                # Indicating that the prevention is an example of first aid so is a mitigation
-                if prevention_first_aid_pattern == True:
-                    shortform_feedback = prevention_first_aid_prompt_input.get_shortform_feedback(feedback_type='negative')
-                    longform_feedback = prevention_first_aid_prompt_input.get_longform_feedback()
-                    recommendation = prevention_first_aid_prompt_input.get_recommendation()
+                prevention_protective_clothing_prompt_input = RA.get_prevention_protective_clothing_input()
+                prevention_protective_clothing_prompt_output, prevention_protective_clothing_pattern = RA.get_prompt_output_and_pattern_matched(prevention_protective_clothing_prompt_input, LLM)
+                
+                # Indicating that the prevention is a protective clothing so is actually a mitigation
+                if prevention_protective_clothing_pattern == True:
+                    shortform_feedback = prevention_protective_clothing_prompt_input.get_shortform_feedback('negative')
+                    longform_feedback = prevention_protective_clothing_prompt_input.get_longform_feedback()
+                    recommendation = prevention_protective_clothing_prompt_input.get_recommendation()
 
                     feedback_for_incorrect_answers += f'''
                     {feedback_header}
-                    \n\n\n\n##### Feedback: {shortform_feedback}\n\n\n\n
-                    \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n
-                    \n\n\n\n##### Recommendation: {recommendation}\n\n\n\n'''
+                    \n\n\n\n#### Feedback: {shortform_feedback}\n\n\n\n
+                    \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n
+                    \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
 
                     is_everything_correct = False
                 
-                # Indicating that the prevention is neither a protective clothing nor an example of first aid
-                # This checks whether the inputted prevention is a prevention or a mitigation 
+                # Indicating that the prevention is not a protective clothing
                 else:
-                    prevention_prompt_input = RA.get_prevention_input()
-                    prevention_prompt_output, prevention_pattern = RA.get_prompt_output_and_pattern_matched(prevention_prompt_input, LLM)
+                    prevention_first_aid_prompt_input = RA.get_prevention_first_aid_input()
+                    prevention_first_aid_prompt_output, prevention_first_aid_pattern = RA.get_prompt_output_and_pattern_matched(prevention_first_aid_prompt_input, LLM)
 
-                    longform_feedback = prevention_prompt_input.get_longform_feedback(prompt_output=prevention_prompt_output)
-
-                    if prevention_pattern == 'prevention' or prevention_pattern == 'both':
-                        feedback_for_correct_answers += f'''
-                        {feedback_header}
-                        \n\n\n\n##### Feedback: {prevention_prompt_input.get_shortform_feedback(feedback_type='positive')}\n\n\n\n
-                        \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n'''
-
-                    if prevention_pattern == 'neither':
-                        recommendation = prevention_prompt_input.get_recommendation(recommendation_type='neither')
-                        feedback_for_incorrect_answers += f'''
-                        {feedback_header}
-                        \n\n\n\n##### Feedback: {prevention_prompt_input.get_shortform_feedback(feedback_type='neither')}\n\n\n\n
-                        \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n
-                        \n\n\n\n##### Recommendation: {recommendation}\n\n\n\n'''
-
-                        is_everything_correct = False
-
-                    if prevention_pattern == 'mitigation':
-                        longform_feedback = prevention_prompt_input.get_longform_feedback(prompt_output=prompt_output, pattern_to_search_for='Mitigation Explanation', lookahead_assertion='Answer')
-                        recommendation = prevention_prompt_input.get_recommendation(recommendation_type='misclassification')
+                    # Indicating that the prevention is an example of first aid so is a mitigation
+                    if prevention_first_aid_pattern == True:
+                        shortform_feedback = prevention_first_aid_prompt_input.get_shortform_feedback('negative')
+                        longform_feedback = prevention_first_aid_prompt_input.get_longform_feedback()
+                        recommendation = prevention_first_aid_prompt_input.get_recommendation()
 
                         feedback_for_incorrect_answers += f'''
                         {feedback_header}
-                        \n\n\n\n##### Feedback: {prevention_prompt_input.get_shortform_feedback(feedback_type='misclassification')}\n\n\n\n
-                        \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n
-                        \n\n\n\n##### Recommendation: {recommendation}\n\n\n\n'''
+                        \n\n\n\n#### Feedback: {shortform_feedback}\n\n\n\n
+                        \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n
+                        \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
 
                         is_everything_correct = False
+                    
+                    # Indicating that the prevention is neither a protective clothing nor an example of first aid
+                    # This checks whether the inputted prevention is a prevention or a mitigation 
+                    else:
+                        prevention_prompt_input = RA.get_prevention_input()
+                        prevention_prompt_output, prevention_pattern = RA.get_prompt_output_and_pattern_matched(prevention_prompt_input, LLM)
 
-            # MITIGATION CHECKS
-            feedback_header = f'''\n\n\n## Feedback for Input: Mitigation\n\n\n'''
+                        longform_feedback = prevention_prompt_input.get_longform_feedback(prompt_output=prevention_prompt_output)
 
-            mitigation_protective_clothing_prompt_input = RA.get_mitigation_protective_clothing_input()
-            mitigation_protective_clothing_prompt_output, mitigation_protective_clothing_pattern = RA.get_prompt_output_and_pattern_matched(mitigation_protective_clothing_prompt_input, LLM)
+                        if prevention_pattern == 'prevention' or prevention_pattern == 'both':
+                            feedback_for_correct_answers += f'''
+                            {feedback_header}
+                            \n\n\n\n#### Feedback: {prevention_prompt_input.get_shortform_feedback('positive')}\n\n\n\n
+                            \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n'''
 
-            shortform_feedback = mitigation_protective_clothing_prompt_input.get_shortform_feedback(feedback_type='positive')
-            longform_feedback = mitigation_protective_clothing_prompt_input.get_longform_feedback()
+                        if prevention_pattern == 'neither':
+                            recommendation = prevention_prompt_input.get_recommendation(recommendation_type='neither')
+                            feedback_for_incorrect_answers += f'''
+                            {feedback_header}
+                            \n\n\n\n#### Feedback: {prevention_prompt_input.get_shortform_feedback('neither')}\n\n\n\n
+                            \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n
+                            \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
 
-            # Indicating that the mitigation is a protective clothing
-            if mitigation_protective_clothing_pattern == True:
-                feedback_for_correct_answers += f'''
-                {feedback_header}
-                \n\n\n\n##### Feedback: {shortform_feedback}\n\n\n\n
-                \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n'''
-            
-            # Indicating that the mitigation is not a protective clothing
-            else:
-                mitigation_first_aid_prompt_input = RA.get_mitigation_first_aid_input()
-                mitigation_first_aid_prompt_output, mitigation_first_aid_pattern = RA.get_prompt_output_and_pattern_matched(mitigation_first_aid_prompt_input, LLM)
+                            is_everything_correct = False
 
-                shortform_feedback = mitigation_first_aid_prompt_input.get_shortform_feedback(feedback_type='positive')
-                longform_feedback = mitigation_first_aid_prompt_input.get_longform_feedback()
+                        if prevention_pattern == 'mitigation':
+                            longform_feedback = prevention_prompt_input.get_longform_feedback(prompt_output=prompt_output, pattern_to_search_for='Mitigation Explanation')
+                            recommendation = prevention_prompt_input.get_recommendation(recommendation_type='misclassification')
 
-                # Indicating that the mitigation is an example of first aid
-                if mitigation_first_aid_pattern == True:
-                        
+                            feedback_for_incorrect_answers += f'''
+                            {feedback_header}
+                            \n\n\n\n#### Feedback: {prevention_prompt_input.get_shortform_feedback('misclassification')}\n\n\n\n
+                            \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n
+                            \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
+
+                            is_everything_correct = False
+
+                # MITIGATION CHECKS
+                feedback_header = f'''\n\n\n## Feedback for Input: Mitigation\n\n\n'''
+
+                mitigation_protective_clothing_prompt_input = RA.get_mitigation_protective_clothing_input()
+                mitigation_protective_clothing_prompt_output, mitigation_protective_clothing_pattern = RA.get_prompt_output_and_pattern_matched(mitigation_protective_clothing_prompt_input, LLM)
+
+                shortform_feedback = mitigation_protective_clothing_prompt_input.get_shortform_feedback('positive')
+                longform_feedback = mitigation_protective_clothing_prompt_input.get_longform_feedback()
+
+                # Indicating that the mitigation is a protective clothing
+                if mitigation_protective_clothing_pattern == True:
                     feedback_for_correct_answers += f'''
                     {feedback_header}
-                    \n\n\n\n##### Feedback: {shortform_feedback}\n\n\n\n
-                    \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n'''
-
-                # Indicating that the mitigation is neither a protective clothing or an example of first aid
-                # This checks whether the inputted mitigation is a prevention or a mitigation 
+                    \n\n\n\n#### Feedback: {shortform_feedback}\n\n\n\n
+                    \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n'''
+                
+                # Indicating that the mitigation is not a protective clothing
                 else:
-                    mitigation_prompt_input = RA.get_mitigation_input()
-                    mitigation_prompt_output, mitigation_pattern = RA.get_prompt_output_and_pattern_matched(mitigation_prompt_input, LLM)
+                    mitigation_first_aid_prompt_input = RA.get_mitigation_first_aid_input()
+                    mitigation_first_aid_prompt_output, mitigation_first_aid_pattern = RA.get_prompt_output_and_pattern_matched(mitigation_first_aid_prompt_input, LLM)
 
-                    longform_feedback = mitigation_prompt_input.get_longform_feedback()
+                    shortform_feedback = mitigation_first_aid_prompt_input.get_shortform_feedback('positive')
+                    longform_feedback = mitigation_first_aid_prompt_input.get_longform_feedback()
 
-                    if mitigation_pattern == 'mitigation' or mitigation_pattern == 'both':
+                    # Indicating that the mitigation is an example of first aid
+                    if mitigation_first_aid_pattern == True:
+                            
                         feedback_for_correct_answers += f'''
                         {feedback_header}
-                        \n\n\n\n##### Feedback: {mitigation_prompt_input.get_shortform_feedback(feedback_type='positive')}\n\n\n\n
-                        \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n'''
-                    
-                    if mitigation_pattern == 'neither':
-                        recommendation = mitigation_prompt_input.get_recommendation(recommendation_type='neither')
+                        \n\n\n\n#### Feedback: {shortform_feedback}\n\n\n\n
+                        \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n'''
 
-                        feedback_for_incorrect_answers += f'''
-                        {feedback_header}
-                        \n\n\n\n##### Feedback: {mitigation_prompt_input.get_shortform_feedback(feedback_type='neither')}\n\n\n\n
-                        \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n
-                        \n\n\n\n##### Recommendation: {recommendation}\n\n\n\n'''
+                    # Indicating that the mitigation is neither a protective clothing or an example of first aid
+                    # This checks whether the inputted mitigation is a prevention or a mitigation 
+                    else:
+                        mitigation_prompt_input = RA.get_mitigation_input()
+                        mitigation_prompt_output, mitigation_pattern = RA.get_prompt_output_and_pattern_matched(mitigation_prompt_input, LLM)
 
-                        is_everything_correct = False
+                        longform_feedback = mitigation_prompt_input.get_longform_feedback(prompt_output=mitigation_prompt_output)
 
-                    if mitigation_pattern == 'prevention':
-                        longform_feedback = mitigation_prompt_input.get_longform_feedback(prompt_output=mitigation_prompt_output, pattern_to_search_for='Prevention Explanation',lookahead_assertion='Mitigation')
-                        recommendation = mitigation_prompt_input.get_recommendation(recommendation_type='misclassification')
-
-                        feedback_for_incorrect_answers += f'''
-                        {feedback_header}
-                        \n\n\n\n##### Feedback: {mitigation_prompt_input.get_shortform_feedback(feedback_type='misclassification')}\n\n\n\n
-                        \n\n\n\n##### Explanation: {longform_feedback}\n\n\n\n
-                        \n\n\n\n##### Recommendation: {recommendation}\n\n\n\n'''
+                        if mitigation_pattern == 'mitigation' or mitigation_pattern == 'both':
+                            feedback_for_correct_answers += f'''
+                            {feedback_header}
+                            \n\n\n\n#### Feedback: {mitigation_prompt_input.get_shortform_feedback('positive')}\n\n\n\n
+                            \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n'''
                         
-                        is_everything_correct = False
+                        if mitigation_pattern == 'neither':
+                            recommendation = mitigation_prompt_input.get_recommendation(recommendation_type='neither')
 
-        if is_everything_correct == True:
-            feedback_for_incorrect_answers = '# Congratulations! All your answers are correct!'
+                            feedback_for_incorrect_answers += f'''
+                            {feedback_header}
+                            \n\n\n\n#### Feedback: {mitigation_prompt_input.get_shortform_feedback('neither')}\n\n\n\n
+                            \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n
+                            \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
 
-        feedback_for_correct_answers += f'''
-        \n\n\n## Feedback for Risk Multiplications {field}\n\n\n\n
-        \n\n\n\n##### Uncontrolled risk multiplication is: {uncontrolled_risk}\n\n\n\n
-        \n\n\n\n##### Controlled risk multiplication is: {controlled_risk}\n\n\n\n'''
+                            is_everything_correct = False
 
-        return Result(is_correct=is_everything_correct, feedback=feedback_for_incorrect_answers + '\n\n\n\n\n' + feedback_for_correct_answers)
-    
+                        if mitigation_pattern == 'prevention':
+                            longform_feedback = mitigation_prompt_input.get_longform_feedback(prompt_output=mitigation_prompt_output, pattern_to_search_for='Prevention Explanation')
+                            recommendation = mitigation_prompt_input.get_recommendation(recommendation_type='misclassification')
+
+                            feedback_for_incorrect_answers += f'''
+                            {feedback_header}
+                            \n\n\n\n#### Feedback: {mitigation_prompt_input.get_shortform_feedback('misclassification')}\n\n\n\n
+                            \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n
+                            \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
+                            
+                            is_everything_correct = False
+
+            if is_everything_correct == True:
+                feedback_for_incorrect_answers = '# Congratulations! All your answers are correct!'
+
+            feedback_for_correct_answers += f'''
+            \n\n\n## Feedback for Risk Multiplications\n\n\n\n
+            \n\n\n\n#### Uncontrolled risk multiplication is: {uncontrolled_risk}\n\n\n\n
+            \n\n\n\n#### Controlled risk multiplication is: {controlled_risk}\n\n\n\n'''
+
+            return Result(is_correct=is_everything_correct, feedback=feedback_for_incorrect_answers + '\n\n\n\n\n' + feedback_for_correct_answers)
 st.title('Risk Assessment Exercise')
-st.subheader('Learning Objectives')
-'Before completing this exercise, please read the following learning objectives:'
-with st.expander('See Learning Objectives'):
-    'On completing this Risk Assessment Exercise, students should be able to:'
-    st.markdown('''
-                1. List the fields necessary to complete a Risk Assessment
-                2. Identify the difference between a prevention and mitigation measure
-                3. Understand how the risk score is calculated
-                4. Understand the difference between an uncontrolled risk and a controlled risk
-                5. Fill out a Risk Assessment for any activity''')
+# st.subheader('Learning Objectives')
+# 'Before completing this exercise, please read the following learning objectives:'
+# with st.expander('See Learning Objectives'):
+#     'On completing this Risk Assessment Exercise, students should be able to:'
+#     st.markdown('''
+#                 1. List the fields necessary to complete a Risk Assessment
+#                 2. Identify the difference between a prevention and mitigation measure
+#                 3. Understand how the risk score is calculated
+#                 4. Understand the difference between an uncontrolled risk and a controlled risk
+#                 5. Fill out a Risk Assessment for any activity''')
 
-st.subheader('Additional Instructions')
-'Now use the instructions below to fill out the Risk Assessment fields:'
-with st.expander('See Additional Instructions'):
-    st.markdown('''
-                1. Fill out the "Risk Assessment Fields" exercise below. 
-                    - NOTE: You should only include one example in each field, e.g. for the 'Prevention' field, only list one prevention.
-                    - If you're stuck, use the "Helpful Resources" below.
-                3. Click submit. Your answers will then be processed (which takes around 10 seconds).
-                4. Afterwards, feedback will be given. 
-                    - If you got something wrong, you should use the feedback provided to improve your answers.
-                    - If you got everything correct, you can click the "See full feedback" dropdown to see why you are correct.
-                5. When you are finished, you can give feedback to me by filling out the feedback form at the bottom. Many Thanks, Charlie''')
+st.subheader('Overview: This exercise gives feedback on Risk Assessments.')
+
+st.title('Instructions')
+st.markdown('''
+            1. Think of an activity that involves risk, e.g. cooking, playing sports, driving, cycling, or crossing the road.
+            2. Read the definitions of input fields and the example risk assessment below.
+            3. Fill out the "Risk Assessment Fields" exercise.
+                - **NOTE: You should only include one example in each field, e.g. for the 'Mitigation' field, only list one mitigation, e.g. "Wear a helmet"**
+            4. When you are finished, you can give feedback to me by filling out the feedback form at the bottom. Many Thanks, Charlie''')
+# with st.expander('See Additional Instructions'):
+#     st.markdown('''
+#                 1. Fill out the "Risk Assessment Fields" exercise below. 
+#                     - NOTE: You should only include one example in each field, e.g. for the 'Prevention' field, only list one prevention.
+#                     - If you're stuck, use the "Helpful Resources" below.
+#                 3. Click submit. Your answers will then be processed (which takes around 10 seconds).
+#                 4. Afterwards, feedback will be given. 
+#                     - If you got something wrong, you should use the feedback provided to improve your answers.
+#                     - If you got everything correct, you can click the "See full feedback" dropdown to see why you are correct.
+#                 5. When you are finished, you can give feedback to me by filling out the feedback form at the bottom. Many Thanks, Charlie''')
     
 st.title('Helpful Resources')
 
@@ -445,8 +488,8 @@ with st.expander('Click to see Example Risk Assessment'):
         'Field': ['Activity', 'Hazard', 'How it harms', 'Who it harms', 'Uncontrolled Likelihood', 
                 'Uncontrolled Severity', 'Uncontrolled Risk', 'Prevention', 'Mitigation', 
                 'Controlled Likelihood', 'Controlled Severity', 'Controlled Risk'],
-        'Example': ['Fluids laboratory', 'Ink spillage', 'Serious eye damage', 'Students', 2, 
-                    2, 4, 'Wear safety glasses', 'Wash eyes with water', 1, 1, 1]
+        'Example': ['Cycling', 'Reckless drivers', 'Collision with cars causes impact injury', 'Cyclists', 1, 
+                    4, 4 , 'Use high viz and lights', 'Wear a helmet', 1, 2, 2]
     }
 
     df = pd.DataFrame(example_risk_assessment)
@@ -470,9 +513,9 @@ with st.form('risk_assessment'):
     # submit_button = st.form_submit_button("Submit")
 
     activity = st.text_input('Activity', value='Mucking out horse\'s stable')
-    hazard = st.text_input('Hazard', value="Horse kicking")
-    how_it_harms = st.text_input('How does the hazard cause harm?', value="Impact injuries")
-    who_it_harms = st.text_input('Who does the hazard harm?', value="Stable hand")
+    hazard = st.text_input('Hazard', value="Horse")
+    how_it_harms = st.text_input('Harm caused by this event', value="Impact injuries")
+    who_it_harms = st.text_input('Who is harmed by this event', value="Stable hand")
     uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)', value='2')
     uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)', value='2')
     uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)', value='4')
@@ -517,7 +560,9 @@ with st.form('risk_assessment'):
             response = [activity, hazard, how_it_harms, who_it_harms, uncontrolled_likelihood, 
                         uncontrolled_severity, uncontrolled_risk, prevention, mitigation, 
                         controlled_likelihood, controlled_severity, controlled_risk]
-            result = evaluation_function(response=response, answer='', params='')
+            params: Params = {"is_feedback_text": False}
+
+            result = evaluation_function(response=response, answer='', params=params)
             is_correct = result['is_correct']
             feedback = result['feedback']
 
@@ -542,18 +587,18 @@ with st.expander('Please fill out this form so I can improve the Exercise!'):
         why_not_constructive = st.text_input('If you answered No, why is the feedback not constructive?')
         are_instructions_clear = st.radio('5/7) Do you think the instructions given for this exercise were clear?', options=options)
         why_not_clear = st.text_input('If you answered No, why are the instructions not clear?')
-        st.subheader('Learning Objectives:')
-        'On completing this Risk Assessment Exercise, students should be able to:'
-        st.markdown('''
-                    1. List the fields necessary to complete a Risk Assessment
-                    2. Identify the difference between a prevention and mitigation measure
-                    3. Understand how the risk score is calculated
-                    4. Understand the difference between an uncontrolled risk and a controlled risk
-                    5. Fill out a Risk Assessment for any activity''')
-        ''
-        ''
-        learning_outcomes = st.radio('6/7) Do you feel you have obtained all the learning outcomes specified for this exercise?', options=options)
-        why_not_learning_outcomes = st.text_input('If you answered No, why do you think you have not obtained all the learning outcomes?')
+        # st.subheader('Learning Objectives:')
+        # 'On completing this Risk Assessment Exercise, students should be able to:'
+        # st.markdown('''
+        #             1. List the fields necessary to complete a Risk Assessment
+        #             2. Identify the difference between a prevention and mitigation measure
+        #             3. Understand how the risk score is calculated
+        #             4. Understand the difference between an uncontrolled risk and a controlled risk
+        #             5. Fill out a Risk Assessment for any activity''')
+        # ''
+        # ''
+        # learning_outcomes = st.radio('6/7) Do you feel you have obtained all the learning outcomes specified for this exercise?', options=options)
+        # why_not_learning_outcomes = st.text_input('If you answered No, why do you think you have not obtained all the learning outcomes?')
         general_feedback = st.text_input('7/7) Any other general feedback?')
         submit_button = st.form_submit_button("Submit")
         google_sheets_writer = GoogleSheetsWriter(sheet_name='Sheet1', spreadsheet_id='1O6ztnca_NPC0TXxmSTrw5xV51vUow0I8nAebEsEntbQ')
