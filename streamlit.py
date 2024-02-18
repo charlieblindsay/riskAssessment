@@ -429,6 +429,8 @@ st.title('Risk Assessment Exercise')
 #                 5. Fill out a Risk Assessment for any activity''')
 
 st.subheader('Overview: This exercise gives feedback on Risk Assessments.')
+repo_link = "https://github.com/lambda-feedback/riskAssessment"
+st.markdown(f'You can find the code repository for this exercise [here]({repo_link}).')
 
 st.title('Instructions')
 st.markdown('''
