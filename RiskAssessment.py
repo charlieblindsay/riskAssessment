@@ -42,7 +42,64 @@ class RiskAssessment:
             return f"{class_name}({attributes})"
         else:
             return f"{class_name}()"
+    
+    def get_no_information_provided_for_prevention_input(self):
+        return NoInformationProvided(input=self.prevention)
+    
+    def get_no_information_provided_for_mitigation_input(self):
+        return NoInformationProvided(input=self.mitigation)
+    
+    def get_activity_input(self):
+        return Activity(activity=self.activity)
 
+    def get_how_it_harms_in_context_input(self):
+        return HowItHarmsInContext(how_it_harms=self.how_it_harms,
+                          activity=self.activity,
+                          hazard = self.hazard)
+    
+    def get_who_it_harms_in_context_input(self):
+        return WhoItHarmsInContext(who_it_harms=self.who_it_harms,
+                            activity=self.activity,
+                            hazard=self.hazard,
+                            how_it_harms=self.how_it_harms)
+    
+    def get_harm_caused_and_hazard_event_input(self):
+        return HarmCausedAndHazardEvent(
+                            activity=self.activity,
+                            hazard=self.hazard,
+                          how_it_harms=self.how_it_harms,
+                            who_it_harms=self.who_it_harms)
+    
+    def get_control_measure_prompt_with_prevention_input(self):
+        return PreventionPrompt(
+            activity=self.activity,
+            who_it_harms=self.who_it_harms,
+            how_it_harms=self.how_it_harms,
+            hazard=self.hazard,
+            control_measure=self.prevention)
+    
+    def get_control_measure_prompt_with_mitigation_input(self):
+        return MitigationPrompt(
+            activity=self.activity,
+            who_it_harms=self.who_it_harms,
+            how_it_harms=self.how_it_harms,
+            hazard=self.hazard,
+            control_measure=self.mitigation)
+    
+    def is_future_harm_reduced_prompt_input_with_prevention(self):
+        return IsFutureHarmReduced(
+            activity=self.activity,
+            control_measure=self.prevention,
+            who_it_harms = self.who_it_harms
+        )
+    
+    def is_future_harm_reduced_prompt_input_with_mitigation(self):
+        return IsFutureHarmReduced(
+            activity=self.activity,
+            control_measure=self.mitigation,
+            who_it_harms = self.who_it_harms
+        )
+    
     def get_word_fields(self):
         return ['activity',
                 'hazard',
@@ -103,145 +160,84 @@ class RiskAssessment:
         
         return integer_fields_incorrect
     
-    def get_input_check_feedback_message(self):
-        empty_fields = self.get_empty_fields()
-        word_fields_incorrect = self.get_word_fields_incorrect()
-        integer_fields_incorrect = self.get_integer_fields_incorrect()
-        
-        feedback_message = ''
-
-        # TODO: Should make it non-compulsory to enter anything for the mitigation field
-        if len(empty_fields) > 0:
-            feedback_message += f'Please fill in the following fields: {str(empty_fields)[1:-1]}.\n\n'
-        
-        if len(empty_fields) == 0 and len(word_fields_incorrect) > 0:
-            feedback_message += f'Please make sure that the following fields only contain words: {str(word_fields_incorrect)[1:-1]}.\n\n'
-        
-        if len(empty_fields) == 0 and len(integer_fields_incorrect) > 0:
-            feedback_message += f'Please make sure that the following fields are a single integer: {str(integer_fields_incorrect)[1:-1]}.\n\n'
-        
-        return feedback_message
-
-    def convert_RiskAssessment_object_into_lambda_response_list(self):
-        return list(vars(self).values())
-    
-    def get_no_information_provided_for_prevention_input(self):
-        return NoInformationProvided(input=self.prevention)
-    
-    def get_no_information_provided_for_mitigation_input(self):
-        return NoInformationProvided(input=self.mitigation)
-    
-    def get_activity_input(self):
-        return Activity(activity=self.activity)
-
-    def get_how_it_harms_in_context_input(self):
-        return HowItHarmsInContext(how_it_harms=self.how_it_harms,
-                          activity=self.activity,
-                          hazard = self.hazard)
-    
-    def get_who_it_harms_in_context_input(self):
-        return WhoItHarmsInContext(who_it_harms=self.who_it_harms,
-                            activity=self.activity,
-                            hazard=self.hazard,
-                            how_it_harms=self.how_it_harms)
-    
-    def get_harm_caused_and_hazard_event_input(self):
-        return HarmCausedAndHazardEvent(
-                            activity=self.activity,
-                            hazard=self.hazard,
-                          how_it_harms=self.how_it_harms,
-                            who_it_harms=self.who_it_harms)
-    
-    def get_control_measure_prompt_with_prevention_input(self):
-        return PreventionPrompt(
-            activity=self.activity,
-            who_it_harms=self.who_it_harms,
-            how_it_harms=self.how_it_harms,
-            hazard=self.hazard,
-            control_measure=self.prevention)
-    
-    def get_control_measure_prompt_with_mitigation_input(self):
-        return MitigationPrompt(
-            activity=self.activity,
-            who_it_harms=self.who_it_harms,
-            how_it_harms=self.how_it_harms,
-            hazard=self.hazard,
-            control_measure=self.mitigation)
-    
-    def is_future_harm_reduced_prompt_input_with_prevention(self):
-        return IsFutureHarmReduced(
-            activity=self.activity,
-            control_measure=self.prevention,
-            who_it_harms = self.who_it_harms
-        )
-    
-    def is_future_harm_reduced_prompt_input_with_mitigation(self):
-        return IsFutureHarmReduced(
-            activity=self.activity,
-            control_measure=self.mitigation,
-            who_it_harms = self.who_it_harms
-        )
-    
     def get_risk_domain_classification_input(self):
         return RiskDomainClassification(hazard=self.hazard,
                                         how_it_harms=self.how_it_harms,
                                         who_it_harms=self.who_it_harms)
     
-    def check_that_likelihood_and_severity_values_are_between_1_and_4(self, likelihood, severity):
-        try:
-            likelihood = int(likelihood)
-            severity = int(severity)
-
-            if likelihood > 4 or likelihood < 1 or severity > 4 or severity < 1:
-                return 'Incorrect. Please make sure that, as per the Risk Assessment convention shown in Question 1, all of the likelihood and severity values are between 1 and 4.'
-            else:
-                return 'correct'
-            
-        except ValueError:
-            return 'Please make sure that the likelihood and severity are both integers.'
-        
-    def check_that_uncontrolled_likelihood_and_severity_values_are_between_1_and_4(self):
-        return self.check_that_likelihood_and_severity_values_are_between_1_and_4(self.uncontrolled_likelihood, self.uncontrolled_severity)
-    
-    def check_that_controlled_likelihood_and_severity_values_are_between_1_and_4(self):
-        return self.check_that_likelihood_and_severity_values_are_between_1_and_4(self.controlled_likelihood, self.controlled_severity)
-
-    def check_that_risk_equals_likelihood_times_severity(self, likelihood, severity, risk):
+    def check_that_likelihood_and_severity_and_risk_are_all_integers(self, likelihood, severity, risk):
         try:
             likelihood = int(likelihood)
             severity = int(severity)
             risk = int(risk)
 
-            if likelihood * severity == risk:
-                return 'correct'
-            else:
-                return 'incorrect. Please check that your risk values are equal to the likelihood multiplied by the severity.'
-            
+            return True
         except ValueError:
-            return 'Please make sure that the likelihood, severity, and risk are all integers.'
-
-    def check_uncontrolled_risk_multiplication(self):
-        return self.check_that_risk_equals_likelihood_times_severity(self.uncontrolled_likelihood,
-                                                                self.uncontrolled_severity,
-                                                                self.uncontrolled_risk)
+            return False
     
-    def check_controlled_risk_multiplication(self):
-        return self.check_that_risk_equals_likelihood_times_severity(self.controlled_likelihood,
-                                                                self.controlled_severity,
-                                                                self.controlled_risk)
+    def uncontrolled_values_are_all_integers(self):
+        return self.check_that_likelihood_and_severity_and_risk_are_all_integers(likelihood=self.uncontrolled_likelihood, 
+                                                                                 severity=self.uncontrolled_severity, 
+                                                                                 risk=self.uncontrolled_risk)
+    
+    def controlled_values_are_all_integers(self):
+        return self.check_that_likelihood_and_severity_and_risk_are_all_integers(likelihood=self.controlled_likelihood, 
+                                                                                 severity=self.controlled_severity, 
+                                                                                 risk=self.controlled_risk)
+    
+    def check_that_likelihood_and_severity_values_are_between_1_and_4(self, likelihood, severity):
+        likelihood = int(likelihood)
+        severity = int(severity)
+
+        if likelihood > 4 or likelihood < 1 or severity > 4 or severity < 1:
+            return True
+        else:
+            return False
+        
+    def uncontrolled_values_are_between_1_and_4(self):
+        return self.check_that_likelihood_and_severity_values_are_between_1_and_4(self.uncontrolled_likelihood, self.uncontrolled_severity)
+    
+    def controlled_values_are_between_1_and_4(self):
+        return self.check_that_likelihood_and_severity_values_are_between_1_and_4(self.controlled_likelihood, self.controlled_severity)
+        
+    def check_that_risk_equals_likelihood_times_severity(self, likelihood, severity, risk):
+        likelihood = int(likelihood)
+        severity = int(severity)
+        risk = int(risk)
+
+        if likelihood * severity == risk:
+            return True
+        else:
+            return False
+    
+    def check_that_uncontrolled_likelihood_and_severity_and_risk_are_all_integers(self):
+        return self.check_that_likelihood_and_severity_and_risk_are_all_integers(likelihood=self.uncontrolled_likelihood, 
+                                                                                 severity=self.uncontrolled_severity, 
+                                                                                 risk=self.uncontrolled_risk)
+
+    def check_that_uncontrolled_likelihood_and_severity_and_risk_are_all_integers(self):
+        return self.check_that_likelihood_and_severity_and_risk_are_all_integers(likelihood=self.controlled_likelihood, 
+                                                                                 severity=self.controlled_severity, 
+                                                                                 risk=self.controlled_risk)
+    
+    def uncontrolled_risk_multiplication(self):
+        return self.check_that_risk_equals_likelihood_times_severity(likelihood=self.uncontrolled_likelihood,
+                                                                severity=self.uncontrolled_severity,
+                                                                risk=self.uncontrolled_risk)
+    
+    def controlled_risk_multiplication(self):
+        return self.check_that_risk_equals_likelihood_times_severity(likelihood=self.controlled_likelihood,
+                                                                severity=self.controlled_severity,
+                                                                risk=self.controlled_risk)
     
     def check_controlled_values_are_less_than_or_equal_to_uncontrolled_values(self, controlled_value, uncontrolled_value, value_name):
-        try:
-            controlled_value = int(controlled_value)
-            uncontrolled_value = int(uncontrolled_value)
+        controlled_value = int(controlled_value)
+        uncontrolled_value = int(uncontrolled_value)
 
-            if controlled_value <= uncontrolled_value:
-                return 'correct'
-            else:
-                return f'Your {value_name} values are incorrect. Please make sure that the controlled {value_name} is less than or equal to the uncontrolled {value_name}.'
-            
-        except ValueError:
-            return 'Please make sure that the controlled and uncontrolled values are both integers.'
+        if controlled_value <= uncontrolled_value:
+            return True
+        else:
+            return False
     
     def compare_controlled_and_uncontrolled_likelihood(self):
         return self.check_controlled_values_are_less_than_or_equal_to_uncontrolled_values(controlled_value=self.controlled_likelihood,
@@ -253,15 +249,42 @@ class RiskAssessment:
                                                                                            uncontrolled_value=self.uncontrolled_severity,
                                                                                            value_name='severity')
     
-    # TODO: Add ability to see prompt output percentages - might be possible for LLMs other than GPT-3
+    def get_input_check_feedback_message(self):
+        empty_fields = self.get_empty_fields()
+        word_fields_incorrect = self.get_word_fields_incorrect()
+        integer_fields_incorrect = self.get_integer_fields_incorrect()
 
-    def get_list_of_input_field_classification_prompt_input_objects(self):
-        return [self.activity_field_classification_input(),
-                self.hazard_field_classification_input(),
-                self.how_it_harms_field_classification_input(),
-                self.who_it_harms_field_classification_input(),
-                self.get_prevention_field_classification_input(),
-                self.get_mitigation_field_classification_input()]
+        # TODO: Should make it non-compulsory to enter anything for the mitigation field
+        if len(empty_fields) > 0:
+            return f'Please fill in the following fields: {str(empty_fields)[1:-1]}.\n\n'
+        
+        if len(word_fields_incorrect) > 0:
+            return f'Please make sure that the following fields only contain words: {str(word_fields_incorrect)[1:-1]}.\n\n'
+        
+        if len(integer_fields_incorrect) > 0:
+            return f'Please make sure that the following fields are a single integer: {str(integer_fields_incorrect)[1:-1]}.\n\n'
+        
+        return True
+    
+    def get_likelihood_severity_risk_feedback_message(self):
+
+        if self.uncontrolled_values_are_all_integers() == True and self.controlled_values_are_all_integers() == True:
+            if self.uncontrolled_values_are_between_1_and_4() or self.controlled_values_are_between_1_and_4():
+                return 'Please make sure that the likelihood and severity values are between 1 and 4.'
+            
+            if self.uncontrolled_risk_multiplication() == False or self.controlled_risk_multiplication() == False:
+                return 'One or both of the risk values are incorrect. The risk value should be the product of their respective likelihood and severity values.'
+            
+            if self.compare_controlled_and_uncontrolled_likelihood() == False:
+                return 'The controlled likelihood value should be less than or equal to the uncontrolled likelihood value.'
+            
+            if self.compare_controlled_and_uncontrolled_severity() == False:
+                return 'The controlled severity value should be less than or equal to the uncontrolled severity value.'
+            
+            return True
+        
+
+    # TODO: Add ability to see prompt output percentages - might be possible for LLMs other than GPT-3
 
     def get_prompt_output_and_pattern_matched(self, prompt_input_object: Type[PromptInput], LLM_caller: Type[LLMCaller], **kwargs):
         regex_pattern_matcher = RegexPatternMatcher()

@@ -90,7 +90,7 @@ class AnthropicLLM(LLMCaller):
         return message
     
     def get_model_output(self, prompt):
-        time.sleep(self.delay_between_requests)
+        # time.sleep(self.delay_between_requests)
         LLM_output = self.get_JSON_output_from_API_call(prompt)
         return LLM_output.content[0].text
     

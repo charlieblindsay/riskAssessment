@@ -147,6 +147,56 @@ def provide_feedback_on_risk_matrix(response):
 
         return Result(is_correct=is_correct, feedback=feedback)
 
+def provide_feedback_on_control_measure_input(control_measure_input_field: str,
+                                              control_measure_prompt_input: Type[PromptInput],
+                                              control_measure_prompt_output: str,
+                                              control_measure_prompt_pattern: str,
+                                              feedback_for_correct_answers: str,
+                                              feedback_for_incorrect_answers: str,
+                                              is_everything_correct: bool):
+    
+    control_measures = ['prevention', 'mitigation']
+    other_control_measure_input_field = [control_measure for control_measure in control_measures if control_measure != control_measure_input_field][0]
+
+    control_measure_prompt_explanation = control_measure_prompt_input.get_longform_feedback(prompt_output=control_measure_prompt_output)
+    other_control_measure_prompt_explanation = control_measure_prompt_input.get_longform_feedback(prompt_output=control_measure_prompt_output, pattern_to_search_for=f'{other_control_measure_input_field.capitalize()} Explanation')
+
+    feedback_header = f'\n\n\n\n\n## Feedback for Input: {control_measure_input_field.capitalize()}\n\n\n\n'
+    
+    if control_measure_prompt_pattern == 'both':
+        feedback_for_correct_answers += f'''
+        {feedback_header}
+        \n\n\n\n#### Feedback: {control_measure_prompt_input.get_shortform_feedback('both')}\n\n\n\n
+        #### {control_measure_input_field.capitalize()} Explanation: {control_measure_prompt_explanation}\n\n\n\n
+        #### {other_control_measure_input_field.capitalize()} Explanation: {other_control_measure_prompt_explanation}\n\n\n\n'''
+
+    if control_measure_prompt_pattern == control_measure_input_field:
+        feedback_for_correct_answers += f'''
+        {feedback_header}
+        \n\n\n\n#### Explanation: {control_measure_prompt_explanation}\n\n\n\n'''
+
+    if control_measure_prompt_pattern == 'neither':
+        recommendation = control_measure_prompt_input.get_recommendation(recommendation_type='neither')
+        feedback_for_incorrect_answers += f'''
+        {feedback_header}
+        \n\n\n\n#### Explanation: {control_measure_prompt_explanation}\n\n\n\n
+        \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
+
+        is_everything_correct = False
+
+    if control_measure_prompt_pattern == other_control_measure_input_field:
+        recommendation = control_measure_prompt_input.get_recommendation(recommendation_type='misclassification')
+
+        feedback_for_incorrect_answers += f'''
+        {feedback_header}
+        \n\n\n\n#### Feedback: {control_measure_prompt_input.get_shortform_feedback('misclassification')}\n\n\n\n
+        \n\n\n\n#### Explanation: {other_control_measure_prompt_explanation}\n\n\n\n
+        \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
+
+        is_everything_correct = False
+
+    return feedback_for_correct_answers, feedback_for_incorrect_answers, is_everything_correct
+
 def evaluation_function(response: Any, answer: Any, params: Params) -> Result:
     """
     Function used to evaluate a student response.
@@ -190,222 +240,149 @@ def evaluation_function(response: Any, answer: Any, params: Params) -> Result:
 
         input_check_feedback_message = RA.get_input_check_feedback_message()
 
-        if input_check_feedback_message != '':
+        if input_check_feedback_message != True:
             return Result(is_correct=False,
-                        feedback=f'Feedback: \n\n {input_check_feedback_message}')
-
-        uncontrolled_values_check = RA.check_that_uncontrolled_likelihood_and_severity_values_are_between_1_and_4()
-        controlled_values_check = RA.check_that_controlled_likelihood_and_severity_values_are_between_1_and_4()
-
-        if input_check_feedback_message == '' and uncontrolled_values_check != 'correct' or controlled_values_check != 'correct':
-            return Result(is_correct=False,
-                        feedback=f'Feedback: \n\n {uncontrolled_values_check}\n\n{controlled_values_check}')
-
-        controlled_risk_multiplication_check = RA.check_controlled_risk_multiplication()
-        uncontrolled_risk_multiplication_check = RA.check_uncontrolled_risk_multiplication()
-
-        if input_check_feedback_message == '' and controlled_risk_multiplication_check != 'correct' or uncontrolled_risk_multiplication_check != 'correct':
-            return Result(is_correct=False,
-                        feedback=f'Feedback: \n\n {controlled_risk_multiplication_check}\n\nUncontrolled risk is {uncontrolled_risk_multiplication_check}')
+                        feedback=f'''\n\n\n\n\n # Feedback:\n\n\n\n\n
+                                    \n\n\n\n\n## {input_check_feedback_message}\n\n\n\n\n''')
         
-        likelihood_comparison_check = RA.compare_controlled_and_uncontrolled_likelihood()
-        severity_comparison_check = RA.compare_controlled_and_uncontrolled_severity()
+        likelihood_severity_risk_feedback_message = RA.get_likelihood_severity_risk_feedback_message()
 
-        if input_check_feedback_message == '' and likelihood_comparison_check != 'correct' and severity_comparison_check != 'correct':
+        if likelihood_severity_risk_feedback_message != True:
             return Result(is_correct=False,
-                        feedback=f'Feedback: \n\n {likelihood_comparison_check}\n\n{severity_comparison_check}')
+                        feedback=f'''\n\n\n\n\n # Feedback:\n\n\n\n\n
+                                    \n\n\n\n\n## {likelihood_severity_risk_feedback_message}\n\n\n\n\n''')
         
-        else:
-            # LLM = ClaudeSonnetLLM(system_message='', temperature=0.1, max_tokens=200)
-            LLM = OpenAILLM()
+        # LLM = ClaudeSonnetLLM(system_message='', temperature=0.1, max_tokens=200)
+        LLM = OpenAILLM()
 
-            feedback_for_incorrect_answers = '\n\n\n\n# Feedback for Incorrect Answers\n\n\n\n'
-            feedback_for_correct_answers = '\n\n\n\n# Feedback for Correct Answers\n\n\n\n'
-            answers_for_which_feedback_cannot_be_given_message = '\n\n\n\n# Feedback for the following answers cannot be given\n\n\n\n'
-            no_information_provided_message = '\n\n\n\n# No information provided for the following fields:\n\n\n\n'
+        feedback_for_incorrect_answers = '\n\n\n\n# Feedback for Incorrect Answers\n\n\n\n'
+        feedback_for_correct_answers = '\n\n\n\n# Feedback for Correct Answers\n\n\n\n'
 
-            is_everything_correct = True
-            is_complete_feedback_given = True
+        fields_for_which_no_information_provided = []
 
-            how_it_harms_in_context_prompt_input = RA.get_how_it_harms_in_context_input()
-            who_it_harms_in_context_prompt_input = RA.get_who_it_harms_in_context_input()
+        is_everything_correct = True
 
-            first_2_prompt_input_objects = [how_it_harms_in_context_prompt_input, who_it_harms_in_context_prompt_input]
-            
-            for prompt_input_object in first_2_prompt_input_objects:
-                if is_everything_correct == True:
-                    prompt_output, pattern = RA.get_prompt_output_and_pattern_matched(prompt_input_object, LLM)
-                    shortform_feedback = RA.get_shortform_feedback_from_regex_match(prompt_input_object, pattern)
+        how_it_harms_in_context_prompt_input = RA.get_how_it_harms_in_context_input()
+        who_it_harms_in_context_prompt_input = RA.get_who_it_harms_in_context_input()
 
-                    field = prompt_input_object.get_field_checked()
-                    
-                    feedback_header_to_add = f''' 
-                    \n\n\n## Feedback for Input: {field}\n\n\n
-                    '''
+        first_2_prompt_input_objects = [how_it_harms_in_context_prompt_input, who_it_harms_in_context_prompt_input]
+        
+        for prompt_input_object in first_2_prompt_input_objects:
+            if is_everything_correct == True:
+                prompt_output, pattern = RA.get_prompt_output_and_pattern_matched(prompt_input_object, LLM)
+                shortform_feedback = RA.get_shortform_feedback_from_regex_match(prompt_input_object, pattern)
 
+                field = prompt_input_object.get_field_checked()
+                
+                feedback_header_to_add = f''' 
+                \n\n\n## Feedback for Input: {field}\n\n\n
+                '''
+
+                if pattern not in prompt_input_object.labels_indicating_correct_input:
                     feedback_to_add = f'''
                     \n\n\n\n#### Feedback: {shortform_feedback}\n\n\n\n'''
+
+                    longform_feedback = prompt_input_object.get_longform_feedback(prompt_output=prompt_output)
                     
-                    if pattern in prompt_input_object.labels_indicating_correct_input:
-                        feedback_for_correct_answers += feedback_header_to_add
-                        feedback_for_correct_answers += feedback_to_add + '\n\n'
+                    if longform_feedback != '':
+                        feedback_to_add += f'''\n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n'''
                     
-                    else:
+                    is_everything_correct = False
+                    recommendation = prompt_input_object.get_recommendation()
 
-                        longform_feedback = prompt_input_object.get_longform_feedback(prompt_output=prompt_output)
-                        
-                        if longform_feedback != '':
-                            feedback_to_add += f'''\n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n'''
-                        
-                        is_everything_correct = False
-                        recommendation = prompt_input_object.get_recommendation()
+                    feedback_to_add += f'''\n\n\n\n#### Recommendation: {recommendation}'''
 
-                        feedback_to_add += f'''\n\n\n\n#### Recommendation: {recommendation}'''
+                    feedback_for_incorrect_answers += feedback_header_to_add
+                    feedback_for_incorrect_answers += feedback_to_add
 
-                        feedback_for_incorrect_answers += feedback_header_to_add
-                        feedback_for_incorrect_answers += feedback_to_add
+                    return Result(is_correct=is_everything_correct, feedback=feedback_for_incorrect_answers)
 
-            if is_everything_correct == True:
-                # PREVENTION CHECKS
+        # PREVENTION CHECKS
+        no_information_provided_for_prevention_prompt_input = RA.get_no_information_provided_for_prevention_input()
+        no_information_provided_for_prevention_prompt_output, no_information_provided_for_prevention_pattern = RA.get_prompt_output_and_pattern_matched(no_information_provided_for_prevention_prompt_input, LLM)
 
-                no_information_provided_for_prevention_prompt_input = RA.get_no_information_provided_for_prevention_input()
-                no_information_provided_for_prevention_prompt_output, no_information_provided_for_prevention_pattern = RA.get_prompt_output_and_pattern_matched(no_information_provided_for_prevention_prompt_input, LLM)
+        if no_information_provided_for_prevention_pattern == 'no information provided':
+            fields_for_which_no_information_provided.append('Prevention')
+        
+        else:
+            # TODO: Avoid duplication of the following code:
+            LLM = OpenAILLM()
 
-                if no_information_provided_for_prevention_pattern == 'no information provided':
-                    no_information_provided_message += f'''\n\n\n\n#### Prevention\n\n\n\n'''
-                else:
-                    feedback_header = f'''\n\n\n## Feedback for Input: Prevention\n\n\n'''
+            harm_caused_and_hazard_event_prompt_input = RA.get_harm_caused_and_hazard_event_input()
+            harm_caused_and_hazard_event_prompt_output, harm_caused_and_hazard_event_pattern = RA.get_prompt_output_and_pattern_matched(harm_caused_and_hazard_event_prompt_input, LLM)
 
-                    # TODO: Avoid duplication of the following code:
-                    LLM = OpenAILLM()
-                    harm_caused_and_hazard_event_prompt_input = RA.get_harm_caused_and_hazard_event_input()
-                    harm_caused_and_hazard_event_prompt_output, harm_caused_and_hazard_event_pattern = RA.get_prompt_output_and_pattern_matched(harm_caused_and_hazard_event_prompt_input, LLM)
+            hazard_event = harm_caused_and_hazard_event_pattern.hazard_event
+            harm_caused = harm_caused_and_hazard_event_pattern.harm_caused
 
-                    hazard_event = harm_caused_and_hazard_event_pattern.hazard_event
-                    harm_caused = harm_caused_and_hazard_event_pattern.harm_caused
+            # LLM = MistralLLM(model='open-mixtral-8x7b', temperature=0.1, max_tokens=300)
+            # LLM = ClaudeSonnetLLM(system_message='', temperature=0.1, max_tokens=300)
+            control_measure_prompt_with_prevention_input = RA.get_control_measure_prompt_with_prevention_input()
+            control_measure_prompt_with_prevention_output, control_measure_prompt_with_prevention_pattern = RA.get_prompt_output_and_pattern_matched(control_measure_prompt_with_prevention_input, LLM, harm_caused=harm_caused, hazard_event=hazard_event)
 
-                    LLM = ClaudeSonnetLLM(system_message='', temperature=0.1, max_tokens=300)
-                    control_measure_prompt_with_prevention_input = RA.get_control_measure_prompt_with_prevention_input()
-                    control_measure_prompt_with_prevention_output, control_measure_prompt_with_prevention_pattern = RA.get_prompt_output_and_pattern_matched(control_measure_prompt_with_prevention_input, LLM, harm_caused=harm_caused, hazard_event=hazard_event)
+            feedback_for_correct_answers, feedback_for_incorrect_answers, is_everything_correct = provide_feedback_on_control_measure_input(
+                control_measure_input_field='prevention',
+                control_measure_prompt_input=control_measure_prompt_with_prevention_input,
+                control_measure_prompt_output=control_measure_prompt_with_prevention_output,
+                control_measure_prompt_pattern=control_measure_prompt_with_prevention_pattern,
+                feedback_for_correct_answers=feedback_for_correct_answers,
+                feedback_for_incorrect_answers=feedback_for_incorrect_answers,
+                is_everything_correct=is_everything_correct
+            )
 
-                    longform_feedback = control_measure_prompt_with_prevention_input.get_longform_feedback(prompt_output=control_measure_prompt_with_prevention_output)
+        # MITIGATION CHECKS
+        no_information_provided_for_mitigation_prompt_input = RA.get_no_information_provided_for_mitigation_input()
+        no_information_provided_for_mitigation_prompt_output, no_information_provided_for_mitigation_pattern = RA.get_prompt_output_and_pattern_matched(no_information_provided_for_mitigation_prompt_input, LLM)
 
-                    if control_measure_prompt_with_prevention_pattern == 'both':
-                        recommendation = control_measure_prompt_with_prevention_input.get_recommendation(recommendation_type='both')
-                        answers_for_which_feedback_cannot_be_given_message += f'''
-                        \n\n\n\n#### {control_measure_prompt_with_prevention_input.get_shortform_feedback('both')}\n\n\n\n
-                        \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
+        if no_information_provided_for_mitigation_pattern == 'no information provided':
+            fields_for_which_no_information_provided.append('Mitigation')
+        else:
+            # If harm_caused and hazard_event have not already been extracted.
+            if no_information_provided_for_prevention_pattern == 'no information provided':
+                # LLM = OpenAILLM()
 
-                        is_complete_feedback_given = False
-                    
-                    if control_measure_prompt_with_prevention_pattern == 'prevention':
-                        feedback_for_correct_answers += f'''
-                        {feedback_header}
-                        \n\n\n\n#### Feedback: {control_measure_prompt_with_prevention_input.get_shortform_feedback('positive')}\n\n\n\n
-                        \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n'''
+                harm_caused_and_hazard_event_prompt_input = RA.get_harm_caused_and_hazard_event_input()
+                harm_caused_and_hazard_event_prompt_output, harm_caused_and_hazard_event_pattern = RA.get_prompt_output_and_pattern_matched(harm_caused_and_hazard_event_prompt_input, LLM)
 
-                    if control_measure_prompt_with_prevention_pattern == 'neither':
-                        recommendation = control_measure_prompt_with_prevention_input.get_recommendation(recommendation_type='neither')
-                        feedback_for_incorrect_answers += f'''
-                        {feedback_header}
-                        \n\n\n\n#### Feedback: {control_measure_prompt_with_prevention_input.get_shortform_feedback('neither')}\n\n\n\n
-                        \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n
-                        \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
-
-                        is_everything_correct = False
-
-                    if control_measure_prompt_with_prevention_pattern == 'mitigation':
-                        longform_feedback = control_measure_prompt_with_prevention_input.get_longform_feedback(prompt_output=control_measure_prompt_with_prevention_output, pattern_to_search_for='Mitigation Explanation')
-                        recommendation = control_measure_prompt_with_prevention_input.get_recommendation(recommendation_type='misclassification')
-
-                        feedback_for_incorrect_answers += f'''
-                        {feedback_header}
-                        \n\n\n\n#### Feedback: {control_measure_prompt_with_prevention_input.get_shortform_feedback('misclassification')}\n\n\n\n
-                        \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n
-                        \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
-
-                        is_everything_correct = False
-
-                # MITIGATION CHECKS
-                no_information_provided_for_mitigation_prompt_input = RA.get_no_information_provided_for_mitigation_input()
-                no_information_provided_for_mitigation_prompt_output, no_information_provided_for_mitigation_pattern = RA.get_prompt_output_and_pattern_matched(no_information_provided_for_mitigation_prompt_input, LLM)
-
-                if no_information_provided_for_mitigation_pattern == 'no information provided':
-                    no_information_provided_message += f'''\n\n\n\n#### Mitigation\n\n\n\n'''
-                else:
-                    feedback_header = f'''\n\n\n## Feedback for Input: Mitigation\n\n\n'''
-
-                    # If harm_caused and hazard_event have not already been extracted.
-                    if no_information_provided_for_prevention_pattern == 'no information provided':
-                        LLM = OpenAILLM()
-
-                        harm_caused_and_hazard_event_prompt_input = RA.get_harm_caused_and_hazard_event_input()
-                        harm_caused_and_hazard_event_prompt_output, harm_caused_and_hazard_event_pattern = RA.get_prompt_output_and_pattern_matched(harm_caused_and_hazard_event_prompt_input, LLM)
-
-                        hazard_event = harm_caused_and_hazard_event_pattern.hazard_event
-                        harm_caused = harm_caused_and_hazard_event_pattern.harm_caused
-
-                    LLM = ClaudeSonnetLLM(system_message='', temperature=0.1, max_tokens=300)
-                    control_measure_prompt_with_mitigation_input = RA.get_control_measure_prompt_with_mitigation_input()
-                    control_measure_prompt_with_mitigation_output, control_measure_prompt_with_mitigation_pattern = RA.get_prompt_output_and_pattern_matched(control_measure_prompt_with_mitigation_input, LLM, harm_caused=harm_caused, hazard_event=hazard_event)
-
-                    longform_feedback = control_measure_prompt_with_mitigation_input.get_longform_feedback(prompt_output=control_measure_prompt_with_mitigation_output)
-                    if control_measure_prompt_with_mitigation_pattern == 'both':
-                        recommendation = control_measure_prompt_with_mitigation_input.get_recommendation(recommendation_type='both')
-                        answers_for_which_feedback_cannot_be_given_message += f'''
-                        \n\n\n\n#### {control_measure_prompt_with_mitigation_input.get_shortform_feedback('both')}\n\n\n\n
-                        \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
-
-                        is_complete_feedback_given = False
-
-                    if control_measure_prompt_with_mitigation_pattern == 'mitigation':
-                        feedback_for_correct_answers += f'''
-                        {feedback_header}
-                        \n\n\n\n#### Feedback: {control_measure_prompt_with_mitigation_input.get_shortform_feedback('positive')}\n\n\n\n
-                        \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n'''
-                    
-                    if control_measure_prompt_with_mitigation_pattern == 'neither':
-                        recommendation = control_measure_prompt_with_mitigation_input.get_recommendation(recommendation_type='neither')
-
-                        feedback_for_incorrect_answers += f'''
-                        {feedback_header}
-                        \n\n\n\n#### Feedback: {control_measure_prompt_with_mitigation_input.get_shortform_feedback('neither')}\n\n\n\n
-                        \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n
-                        \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
-
-                        is_everything_correct = False
-
-                    if control_measure_prompt_with_mitigation_pattern == 'prevention':
-                        longform_feedback = control_measure_prompt_with_mitigation_input.get_longform_feedback(prompt_output=control_measure_prompt_with_mitigation_output, pattern_to_search_for='Prevention Explanation')
-                        recommendation = control_measure_prompt_with_mitigation_input.get_recommendation(recommendation_type='misclassification')
-
-                        feedback_for_incorrect_answers += f'''
-                        {feedback_header}
-                        \n\n\n\n#### Feedback: {control_measure_prompt_with_mitigation_input.get_shortform_feedback('misclassification')}\n\n\n\n
-                        \n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n
-                        \n\n\n\n#### Recommendation: {recommendation}\n\n\n\n'''
-                        
-                        is_everything_correct = False
-
-            if is_everything_correct == True:
-
-                if is_complete_feedback_given == True:
-                    feedback_for_incorrect_answers = '# Congratulations! All your answers are correct!'
-                else:
-                    feedback_for_incorrect_answers = ''
-
-            if is_complete_feedback_given == True:
-                answers_for_which_feedback_cannot_be_given_message = ''
+                hazard_event = harm_caused_and_hazard_event_pattern.hazard_event
+                harm_caused = harm_caused_and_hazard_event_pattern.harm_caused
             
-            if no_information_provided_for_prevention_pattern == False and no_information_provided_for_mitigation_pattern == False:
-                no_information_provided_message = ''
+            # LLM = MistralLLM(model='open-mixtral-8x7b', temperature=0.1, max_tokens=300)
+            # LLM = ClaudeSonnetLLM(system_message='', temperature=0.1, max_tokens=300)
+            
+            control_measure_prompt_with_mitigation_input = RA.get_control_measure_prompt_with_mitigation_input()
+            control_measure_prompt_with_mitigation_output, control_measure_prompt_with_mitigation_pattern = RA.get_prompt_output_and_pattern_matched(control_measure_prompt_with_mitigation_input, LLM, harm_caused=harm_caused, hazard_event=hazard_event)
+            
+            feedback_for_correct_answers, feedback_for_incorrect_answers, is_everything_correct = provide_feedback_on_control_measure_input(
+                control_measure_input_field='mitigation',
+                control_measure_prompt_input=control_measure_prompt_with_mitigation_input,
+                control_measure_prompt_output=control_measure_prompt_with_mitigation_output,
+                control_measure_prompt_pattern=control_measure_prompt_with_mitigation_pattern,
+                feedback_for_correct_answers=feedback_for_correct_answers,
+                feedback_for_incorrect_answers=feedback_for_incorrect_answers,
+                is_everything_correct=is_everything_correct,
+            )
 
-            feedback_for_correct_answers += f'''
-            \n\n\n## Feedback for Risk Multiplications\n\n\n\n
-            \n\n\n\n#### Uncontrolled risk multiplication is: {uncontrolled_risk_multiplication_check}\n\n\n\n
-            \n\n\n\n#### Controlled risk multiplication is: {controlled_risk_multiplication_check}\n\n\n\n'''
+        if is_everything_correct == True:
+            feedback_for_incorrect_answers = '# Congratulations! All your answers are correct!'
+        
+        if fields_for_which_no_information_provided == []:
+            no_information_provided_message = ''
+        else:
+            no_information_provided_message = f'\n\n\n\n\n## Fields for which no information is provided and hence no feedback given: {", ".join(fields_for_which_no_information_provided)}\n\n\n\n\n'
 
-            return Result(is_correct=is_everything_correct, feedback=feedback_for_incorrect_answers + '\n\n\n\n\n' + answers_for_which_feedback_cannot_be_given_message + '\n\n\n\n\n' + feedback_for_correct_answers + '\n\n\n\n\n' + no_information_provided_message)
+        if fields_for_which_no_information_provided != ['Prevention', 'Mitigation']:
+            hazard_event_and_harm_caused_inferred_message = f'''## The following were inferred from your answers: \n\n\n\n\n
+            \n\n\n\n\n### Event that leads to harm: "{hazard_event}"\n\n\n\n\n
+            \n\n\n\n\n### Harm caused to '{RA.who_it_harms}': "{harm_caused}".\n\n\n\n
+            \n\n\n\n\n### If they are incorrect, please make these more explicit in the "Hazard" and "How it harms" fields.\n\n\n\n\n'''
+        else:
+            hazard_event_and_harm_caused_inferred_message = ''
+        
+        feedback_for_correct_answers += f'''
+        \n\n\n\n### There are no errors in your likelihood, severity, and risk values.\n\n\n\n'''
+
+        return Result(is_correct=is_everything_correct, feedback=hazard_event_and_harm_caused_inferred_message + '\n\n\n\n\n' + feedback_for_incorrect_answers + '\n\n\n\n\n' + feedback_for_correct_answers + '\n\n\n\n\n' + no_information_provided_message)
+
 st.title('Risk Assessment Exercise')
 # st.subheader('Learning Objectives')
 # 'Before completing this exercise, please read the following learning objectives:'
