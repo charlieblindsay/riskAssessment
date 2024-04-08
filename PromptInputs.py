@@ -708,7 +708,7 @@ class PreventionPrompt(ControlMeasureClassification):
             return "For the prevention field, enter a control measure which reduces the likelihood of the hazard event."
 
         if recommendation_type == 'misclassification':
-            return f"""A mitigation measure reduces the harm caused by the hazard event either while the hazard event is occurring or after it has occurred. On the other hand, a prevention measure reduces the likelihood of the hazard event occurring in the first place. Please use the above definitions to ammend your prevention input."""
+            return f"""A mitigation measure reduces the harm caused by the hazard. On the other hand, a prevention measure reduces the likelihood of the event that leads to harm. Please use the above definitions to ammend your prevention input."""
     
 class MitigationPrompt(ControlMeasureClassification):
     def __init__(self, control_measure, activity, hazard, how_it_harms, who_it_harms):
@@ -737,7 +737,7 @@ class MitigationPrompt(ControlMeasureClassification):
             return "For the mitigation field, enter a control measure which reduces the harm caused by the hazard event either while the hazard event is occurring or after it has occurred."
         
         if recommendation_type == 'misclassification':
-            return f"""A prevention measure reduces the likelihood of the hazard event occurring in the first place. On the other hand, a mitigation measure reduces the harm caused by the hazard event while it is happening or after it has occurred. Please use the above definitions to ammend your mitigation input."""
+            return f"""A prevention measure reduces the likelihood of the event that leads to harm. On the other hand, a mitigation measure reduces the harm caused by the hazard. Please use the above definitions to ammend your mitigation input."""
 
 class SummarizeControlMeasureFeedback(PromptInput):
     def __init__(self):
@@ -755,7 +755,7 @@ class SummarizeControlMeasureFeedback(PromptInput):
         </STYLE>
 
         <TONE>
-        Use a formal tone.
+        Use a formal tone in your outputs.
         </TONE>
 
         <AUDIENCE>
@@ -764,9 +764,10 @@ class SummarizeControlMeasureFeedback(PromptInput):
         
     def get_instructions(self, control_measure_type, feedback):
         return f"""<INSTRUCTIONS>
-        Summarize the {control_measure_type} feedback: "{feedback}" in the following format.
-        In 2 sentences, provide an explanation as to why the control measure is or is not a {control_measure_type}. 
-        In the third sentence, provide a statement of whether or not control measure is {control_measure_type} measure.
+        Summarize the {control_measure_type} feedback: "{feedback}" in the following format:
+        - In 2 sentences, provide an explanation as to why the control measure is or is not a {control_measure_type}. 
+        - In one sentence, provide a statement of whether or not control measure is {control_measure_type} measure.
+        Start the summary immediately after these instructions.
         </INSTRUCTIONS>"""
     
     def get_example(self, control_measure_type):
