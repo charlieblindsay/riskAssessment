@@ -13,7 +13,7 @@ class RiskAssessment:
     def __init__(self, activity, hazard, how_it_harms, who_it_harms,
                   uncontrolled_likelihood, uncontrolled_severity, uncontrolled_risk,
                  prevention, mitigation, controlled_likelihood, controlled_severity, controlled_risk,
-                 risk_domain, prevention_prompt_expected_output, mitigation_prompt_expected_output):
+                 risk_domain, prevention_prompt_expected_class, mitigation_prompt_expected_class):
         self.activity = activity
         self.hazard = hazard
         self.how_it_harms = how_it_harms
@@ -27,8 +27,8 @@ class RiskAssessment:
         self.controlled_severity = controlled_severity
         self.controlled_risk = controlled_risk
 
-        self.prevention_prompt_expected_output = prevention_prompt_expected_output
-        self.mitigation_prompt_expected_output = mitigation_prompt_expected_output
+        self.prevention_prompt_expected_class = prevention_prompt_expected_class
+        self.mitigation_prompt_expected_class = mitigation_prompt_expected_class
         self.risk_domain = risk_domain
 
         # TODO: Remove these parameters
@@ -86,19 +86,8 @@ class RiskAssessment:
             hazard=self.hazard,
             control_measure=self.mitigation)
     
-    def is_future_harm_reduced_prompt_input_with_prevention(self):
-        return IsFutureHarmReduced(
-            activity=self.activity,
-            control_measure=self.prevention,
-            who_it_harms = self.who_it_harms
-        )
-    
-    def is_future_harm_reduced_prompt_input_with_mitigation(self):
-        return IsFutureHarmReduced(
-            activity=self.activity,
-            control_measure=self.mitigation,
-            who_it_harms = self.who_it_harms
-        )
+    def get_feedback_summary_input(self):
+        return SummarizeControlMeasureFeedback()
     
     def get_word_fields(self):
         return ['activity',
@@ -322,8 +311,8 @@ class RiskAssessmentWithoutNumberInputs(RiskAssessment):
     def __init__(self, activity, hazard, how_it_harms, who_it_harms,
                  prevention, mitigation, 
                  risk_domain,
-                 prevention_prompt_expected_output, 
-                 mitigation_prompt_expected_output):
+                 prevention_prompt_expected_class, 
+                 mitigation_prompt_expected_class):
         super().__init__(activity=activity,
                          hazard=hazard,
                          how_it_harms=how_it_harms,
@@ -337,5 +326,5 @@ class RiskAssessmentWithoutNumberInputs(RiskAssessment):
                          controlled_severity='1',
                          controlled_risk='1',
                          risk_domain=risk_domain,
-                         prevention_prompt_expected_output=prevention_prompt_expected_output,
-                         mitigation_prompt_expected_output=mitigation_prompt_expected_output)
+                         prevention_prompt_expected_class=prevention_prompt_expected_class,
+                         mitigation_prompt_expected_class=mitigation_prompt_expected_class)

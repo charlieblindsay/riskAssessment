@@ -1,16 +1,19 @@
-import streamlit as st
-import pandas as pd
-
-import time
+import openai
+import requests
 import anthropic
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
+import time
+
 from typing import Type
-from PromptInputs import PromptInput
 
 import os
 from dotenv import load_dotenv
-import openai
+
+try:
+    from .PromptInputs import *
+except ImportError:
+    from PromptInputs import *
 
 class LLMCaller:
     def __init__(self, name:str):
@@ -26,12 +29,12 @@ class LLMCaller:
         pass
 
 class OpenAILLM(LLMCaller):
-    def __init__(self):
+    def __init__(self, temperature, max_tokens):
         # TODO: Would it be better to use the gpt-instruct model?
-        self.name = 'gpt-3.5-turbo'
+        self.name = 'gpt-3.5-turbo-1106' # GPT-3.5 Turbo model with improved instruction following
         self.update_api_key_from_env_file()
-        self.temperature = 0.1
-        self.max_tokens = 300
+        self.temperature = temperature
+        self.max_tokens = max_tokens
         self.delay_between_requests = 0
 
     def update_api_key_from_env_file(self):
@@ -90,7 +93,7 @@ class AnthropicLLM(LLMCaller):
         return message
     
     def get_model_output(self, prompt):
-        # time.sleep(self.delay_between_requests)
+        time.sleep(self.delay_between_requests)
         LLM_output = self.get_JSON_output_from_API_call(prompt)
         return LLM_output.content[0].text
     
@@ -132,9 +135,18 @@ class MistralLLM(LLMCaller):
         return chat_response
     
     def get_model_output(self, prompt):
-        time.sleep(self.delay_between_requests)
+        # time.sleep(self.delay_between_requests)
         LLM_output = self.get_JSON_output_from_API_call(prompt)
         return LLM_output.choices[0].message.content
+    
+class Mixtral8x7B(MistralLLM):
+    def __init__(self, temperature, max_tokens):
+        self.model = 'open-mixtral-8x7b'
+        self.name = self.model
+        self.temperature = temperature
+        self.max_tokens = max_tokens
+        self.delay_between_requests = 0
+        self.update_api_key_from_env_file()
 
 class HuggingfaceLLMCaller(LLMCaller):
     def __init__(self, name, LLM_API_ENDPOINT):
