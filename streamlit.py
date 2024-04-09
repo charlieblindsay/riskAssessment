@@ -396,7 +396,7 @@ def evaluation_function(response: Any, answer: Any, params: Params) -> Result:
             hazard_event_and_harm_caused_inferred_message = f'''## The following were inferred from your answers: \n\n\n\n\n
             \n\n\n\n\n### Event that leads to harm: "{hazard_event}"\n\n\n\n\n
             \n\n\n\n\n### Harm caused to '{RA.who_it_harms}': "{harm_caused}".\n\n\n\n
-            \n\n\n\n\n### If they are incorrect, please make these more explicit in the "Hazard" and "How it harms" fields.\n\n\n\n\n'''
+            \n\n\n\n\n#### If they are incorrect, please make these more explicit in the "Hazard" and "How it harms" fields.\n\n\n\n\n'''
         else:
             hazard_event_and_harm_caused_inferred_message = ''
         
@@ -418,7 +418,9 @@ st.title('Risk Assessment Exercise')
 
 st.subheader('Overview: This exercise gives feedback on Risk Assessments.')
 repo_link = "https://github.com/lambda-feedback/riskAssessment"
-st.markdown(f'You can find the code repository for this exercise [here]({repo_link}).')
+# st.markdown(f'You can find the code repository for this exercise [here]({repo_link}).')
+
+st.subheader('If you complete this exercise and provide feedback, you will gain access to an exclusive YouTube video which highlights the risks of provoking wild animals :eyes:')
 
 st.title('Instructions')
 st.markdown('''
@@ -448,7 +450,7 @@ with st.expander('Click to see Input Field Definitions'):
         'Definition': [
             'Activity involving the hazard',
             'Dangerous phenomenon, object, human activity or condition.',
-            'One-sentence explanation of how the hazard can cause harm.',
+            'One-sentence explanation of how the hazard can cause harm and the harm caused.',
             'Individuals or groups at risk of harm from the hazard.',
             'Action which reduces the likelihood of the hazard causing harm.',
             'Action which reduces the harm caused by the hazard.',
@@ -516,33 +518,33 @@ with st.form('risk_assessment'):
     # controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)', value='1')
     # submit_button = st.form_submit_button("Submit")
                       
-    activity = st.text_input('Activity', value='Fluids laboratory')
-    hazard = st.text_input('Hazard', value="Ink spillage")
-    how_it_harms = st.text_input('How does the hazard cause harm?', value="Serious eye damage")
-    who_it_harms = st.text_input('Who does the hazard harm?', value="Students")
-    uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)', value='2')
-    uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)', value='2')
-    uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)', value='4')
-    prevention = st.text_input('Prevention', value="Wear safety glasses")
-    mitigation = st.text_input('Mitigation', value="Wash eyes with water")
-    controlled_likelihood = st.text_input('Controlled Likelihood (enter an integer between 1 and 5)', value='1')
-    controlled_severity = st.text_input('Controlled Severity (enter an integer between 1 and 5)', value='1')
-    controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)', value='1')
-    submit_button = st.form_submit_button("Submit")
-
-    # activity = st.text_input('Activity')
-    # hazard = st.text_input('Hazard')
-    # how_it_harms = st.text_input('How does the hazard cause harm?')
-    # who_it_harms = st.text_input('Who does the hazard harm?')
-    # uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)') 
-    # uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)')
-    # uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)') 
-    # prevention = st.text_input('Prevention')
-    # mitigation = st.text_input('Mitigation')
-    # controlled_likelihood = st.text_input('Controlled Likelihood (enter an integer between 1 and 5)') 
-    # controlled_severity = st.text_input('Controlled Severity (enter an integer between 1 and 5)')
-    # controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)')
+    # activity = st.text_input('Activity', value='Fluids laboratory')
+    # hazard = st.text_input('Hazard', value="Ink spillage")
+    # how_it_harms = st.text_input('How does the hazard cause harm?', value="Serious eye damage")
+    # who_it_harms = st.text_input('Who does the hazard harm?', value="Students")
+    # uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)', value='2')
+    # uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)', value='2')
+    # uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)', value='4')
+    # prevention = st.text_input('Prevention', value="Wear safety glasses")
+    # mitigation = st.text_input('Mitigation', value="Wash eyes with water")
+    # controlled_likelihood = st.text_input('Controlled Likelihood (enter an integer between 1 and 5)', value='1')
+    # controlled_severity = st.text_input('Controlled Severity (enter an integer between 1 and 5)', value='1')
+    # controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)', value='1')
     # submit_button = st.form_submit_button("Submit")
+
+    activity = st.text_input('Activity')
+    hazard = st.text_input('Hazard')
+    how_it_harms = st.text_input('How does the hazard cause harm?')
+    who_it_harms = st.text_input('Who does the hazard harm?')
+    uncontrolled_likelihood = st.text_input('Uncontrolled Likelihood (enter an integer between 1 and 5)') 
+    uncontrolled_severity = st.text_input('Uncontrolled Severity (enter an integer between 1 and 5)')
+    uncontrolled_risk = st.text_input('Uncontrolled Risk (enter an integer between 1 and 25)') 
+    prevention = st.text_input('Prevention')
+    mitigation = st.text_input('Mitigation')
+    controlled_likelihood = st.text_input('Controlled Likelihood (enter an integer between 1 and 5)') 
+    controlled_severity = st.text_input('Controlled Severity (enter an integer between 1 and 5)')
+    controlled_risk = st.text_input('Controlled Risk (enter an integer between 1 and 25)')
+    submit_button = st.form_submit_button("Submit")
 
     # TODO: Add try except for when they are not connected to the internet.
     if submit_button:
@@ -630,5 +632,8 @@ with st.expander('Please fill out this form so I can improve the Exercise!'):
                     general_feedback
                     ])
                 st.write('Thank you very much for your feedback! It will be taken on board!')
+                video_link = 'https://www.youtube.com/watch?v=T7l_XxoTMuE'
+                st.markdown(f'And congratulations on completing the exercise! You can now watch the exclusive [YouTube video]({video_link})!')
+                st.write('')
             else:
                 st.write('Please submit a risk assessment first')

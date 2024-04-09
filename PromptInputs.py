@@ -701,14 +701,11 @@ class PreventionPrompt(ControlMeasureClassification):
 
     # TODO: When you have hazard event input, can include in feedback.
     def get_recommendation(self, recommendation_type):
-        if recommendation_type == 'both':
-            return f"""A mitigation measure reduces the harm caused by the hazard event either while the hazard event is occurring or after it has occurred. On the other hand, a prevention measure reduces the likelihood of the hazard event occurring in the first place. Please use the above definitions to check your prevention input."""
+        if recommendation_type == 'both' or recommendation_type == 'misclassification':
+            return f"""A mitigation measure reduces the harm caused by the "event that leads to harm". On the other hand, a prevention measure reduces the likelihood of the "event that leads to harm". Please use the above definitions to ammend your prevention input."""
 
         if recommendation_type == 'neither':
-            return "For the prevention field, enter a control measure which reduces the likelihood of the hazard event."
-
-        if recommendation_type == 'misclassification':
-            return f"""A mitigation measure reduces the harm caused by the hazard. On the other hand, a prevention measure reduces the likelihood of the event that leads to harm. Please use the above definitions to ammend your prevention input."""
+            return """For the prevention field, enter a control measure which reduces the likelihood of the "event that leads to harm"."""
     
 class MitigationPrompt(ControlMeasureClassification):
     def __init__(self, control_measure, activity, hazard, how_it_harms, who_it_harms):
@@ -730,14 +727,11 @@ class MitigationPrompt(ControlMeasureClassification):
     
     # TODO: When you have hazard event input, can include in feedback.
     def get_recommendation(self, recommendation_type):
-        if recommendation_type == 'both':
-            return f"""A prevention measure reduces the likelihood of the hazard event occurring in the first place. On the other hand, a mitigation measure reduces the harm caused by the hazard event while it is happening or after it has occurred. Please use the above definitions to check your mitigation input."""
+        if recommendation_type == 'both' or recommendation_type == 'misclassification':
+            return f"""A prevention measure reduces the likelihood of the "event that leads to harm". On the other hand, a mitigation measure reduces the harm caused by the "event that leads to harm". Please use the above definitions to ammend your mitigation input."""
 
         if recommendation_type == 'neither':
-            return "For the mitigation field, enter a control measure which reduces the harm caused by the hazard event either while the hazard event is occurring or after it has occurred."
-        
-        if recommendation_type == 'misclassification':
-            return f"""A prevention measure reduces the likelihood of the event that leads to harm. On the other hand, a mitigation measure reduces the harm caused by the hazard. Please use the above definitions to ammend your mitigation input."""
+            return """For the mitigation field, enter a control measure which reduces the harm caused by the "event that leads to harm"."""
 
 class SummarizeControlMeasureFeedback(PromptInput):
     def __init__(self):
