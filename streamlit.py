@@ -595,7 +595,7 @@ with st.expander('Please fill out this form so I can improve the Exercise!'):
         # why_not_learning_outcomes = st.text_input('If you answered No, why do you think you have not obtained all the learning outcomes?')
         general_feedback = st.text_input('7/7) Any other general feedback?')
         submit_button = st.form_submit_button("Submit")
-        google_sheets_writer = GoogleSheetsWriter(sheet_name='Sheet1', spreadsheet_id='1O6ztnca_NPC0TXxmSTrw5xV51vUow0I8nAebEsEntbQ')
+        google_sheets_writer = GoogleSheetsWriter(sheet_name='V2', spreadsheet_id='1O6ztnca_NPC0TXxmSTrw5xV51vUow0I8nAebEsEntbQ')
 
         RiskAssessment_string = f'''RiskAssessment(
             activity="{activity}",
