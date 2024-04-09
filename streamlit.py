@@ -424,7 +424,7 @@ st.subheader('If you complete this exercise and provide feedback, you will gain 
 
 st.title('Instructions')
 st.markdown('''
-            1. Think of an activity that involves risk, e.g. combat sports, firefighting, parkour, skiing, bungee jumping, volcano exploration, etc.
+            1. Think of an activity that involves risk, e.g. combat sports, firefighting, parkour, skiing, bungee jumping, volcano exploration, free diving etc.
             2. In the "Helpful Resources" below, read the "Input field definitions" and the "Example Risk Assessment".
             3. Fill out the "Risk Assessment Fields" exercise.
                 - **NOTE: You should only include one example in each field, e.g. for the 'Mitigation' field, only list one mitigation, e.g. "Wear a helmet"**
