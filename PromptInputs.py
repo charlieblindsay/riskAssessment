@@ -36,6 +36,7 @@ class NoInformationProvided(PromptInput):
         self.pattern_matching_method = 'check_string_for_no_information_provided'
         self.candidate_labels = ['control measure', 'no information provided']
         self.input = input
+        self.max_tokens = 200
     
     def generate_prompt(self):
         return f'''
@@ -99,47 +100,13 @@ class NoInformationProvided(PromptInput):
 
         Input: "{self.input}"'''
 
-class Activity(PromptInput):
-    def __init__(self, activity: str):
-        super().__init__()
-        self.activity = activity
-
-    def get_field_checked(self):
-        return 'Activity'
-    
-        # If "Golf" is an example of an activity, answer True, else answer False.
-
-        # Use the following output format:
-        # Overall Answer: <your answer>
-    
-    def generate_prompt(self):
-        return f'''
-        If the input is an example of an activity, answer True, else answer False.
-
-        If "{self.activity}" is an example of an activity, answer True, else answer False.
-
-        Use the following output format:
-        Overall Answer: <your answer>'''
-    
-    def get_shortform_feedback(self, feedback_type):
-        if feedback_type == 'positive':
-            return f"Correct! '{self.activity}' is an activity."
-        if feedback_type == 'negative':
-            return f"Incorrect. '{self.activity}' is not an activity."
-    
-    def get_longform_feedback(self, prompt_output=''):
-        regex_pattern_matcher = RegexPatternMatcher()
-        return ''
-
-    def get_recommendation(self):
-        return f'Enter an activity that aligns with the definition: {self.activity_definition}'
-
 class HowItHarmsInContext(PromptInput):
     def __init__(self, how_it_harms, activity, hazard):
         super().__init__()
         self.how_it_harms = how_it_harms
         self.activity = activity
         self.hazard = hazard
+        self.max_tokens = 200
 
     def get_field_checked(self):
         return 'Hazard & How It Harms'
@@ -150,7 +117,7 @@ class HowItHarmsInContext(PromptInput):
         return f'''
         Follow these instructions:
         1. In one sentence, describe the hazard: '{self.hazard}' during the activity: '{self.activity}'.
-        2. In one sentence, explain whether or not '{self.how_it_harms}' is a way that this hazard directly causes harm. 
+        2. In one sentence, explain whether or not '{self.how_it_harms}' is a way that this hazard causes harm. 
         3. If it is, answer True, else answer False.
         '''
     
@@ -159,12 +126,12 @@ class HowItHarmsInContext(PromptInput):
         Example Input:
         Follow these instructions:
         1. In one sentence, describe the hazard: 'Electrocution' during the activity: 'Fluids laboratory'.
-        2. In one sentence, explain whether or not 'Electrocuted by mains voltage' is a way that this hazard DIRECTLY causes harm. 
+        2. In one sentence, explain whether or not 'Electrocuted by mains voltage' is a way that this hazard causes harm. 
         3. If it is, answer True, else answer False.
 
         Output:
         Description: 'Electrocution' during a fluids laboratory can occur when an individual comes into contact with mains voltage.
-        Explanation: As water is a conductor of electricity, touching electronics with wet hands can DIRECTLY cause harm
+        Explanation: As water is a conductor of electricity, touching electronics with wet hands can cause harm
         through electrocution as the water provides a path for electrical current to flow through the body.
         Overall Answer: True
         '''
@@ -173,12 +140,12 @@ class HowItHarmsInContext(PromptInput):
         Example Input:
         Follow these instructions:
         1. In one sentence, describe the hazard: 'Volcanic eruption' during the activity: 'Volcano visit'.
-        2. In one sentence, explain whether or not "Heavy impact when falling onto a demonstrator and causing injury" is a way that this hazard DIRECTLY causes harm.
+        2. In one sentence, explain whether or not "Heavy impact when falling onto a demonstrator and causing injury" is a way that this hazard causes harm.
         3. If it is, answer True, else answer False.
 
         Output:
         Description: A volcanic eruption during a volcano activity can lead to various hazards and risks.
-        Explanation: "Heavy impact when falling onto a demonstrator and causing injury" is not a DIRECT way that a volcanic eruption causes harm. The primary dangers of a volcanic eruption include lava flows, ash clouds, and pyroclastic flows.
+        Explanation: "Heavy impact when falling onto a demonstrator and causing injury" is not a way that a volcanic eruption causes harm. The primary dangers of a volcanic eruption include lava flows, ash clouds, and pyroclastic flows.
         Overall Answer: False.
         '''
         return f'''
@@ -213,6 +180,7 @@ class WhoItHarmsInContext(PromptInput):
         self.activity = activity
         self.hazard = hazard
         self.how_it_harms = how_it_harms
+        self.max_tokens = 200
 
     def get_field_checked(self):
         return 'Who It Harms'
@@ -223,24 +191,24 @@ class WhoItHarmsInContext(PromptInput):
         Example Input:
         Follow these instructions:
         1. In one sentence, describe the hazard: 'Getting kicked by a horse' during the activity: 'Mucking out stable', given how it harms: 'Impact injury'.
-        2. In one sentence, explain whether it is possible that a 'Stable hand' is harmed by this hazard.
+        2. In one sentence, explain whether a 'Stable hand' is someone at high risk from being harmed by this hazard.
         3. If it is possible, answer True, else answer False.
 
         Output:
         Description: When mucking out a stable, it is possible that the person mucking out is kicked by a horse, resulting in impact injuries.
-        Explanation: It is likely that a "Stable hand" would muck out a stable and therefore possible for the horse to kick the "Stable hand", causing an impact injury.
+        Explanation: It is likely that a "Stable hand" would muck out a stable and therefore they are at high risk from the horse kick them.
         Overall Answer: True
         '''
 
         example_of_incorrect_who_it_harms = f'''
         Example Input:
         1. In one sentence, describe the hazard: 'Ink spillage' during the activity 'Fluids laboratory', given how it harms: 'Serious eye damage.
-        2. In one sentence, explain whether it is possible that a 'Stable hand' is harmed by this hazard.
+        2. In one sentence, explain whether it is possible that a 'Stable hand' to be DIRECTLY harmed by this hazard.
         3. If it is possible, answer True, else answer False.
 
         Output:
         Description: Ink spillage during the fluids laboratory activity can cause serious eye damage if the ink comes into contact with the eyes.
-        Explanation: It is unlikely that a stable hand would be harmed by this hazard, as they typically work with horses in a stable environment and are not involved in laboratory activities involving fluids like ink.
+        Explanation: A stable hand is not someone at high risk from this hazard, as they typically work with horses in a stable environment and are not involved in laboratory activities involving fluids like ink.
         Overall Answer: False
         '''
         return f'''
@@ -250,7 +218,7 @@ class WhoItHarmsInContext(PromptInput):
 
         Follow these instructions:
         1. In one sentence, describe the hazard: '{self.hazard}' during the activity: '{self.activity}', given how it harms: '{self.how_it_harms}'.
-        2. In one sentence, explain whether it is possible that '{self.who_it_harms}' is harmed by this hazard.
+        2. In one sentence, explain whether '{self.who_it_harms}' is at high risk from being harmed by this hazard.
         3. If it is possible, answer True, else answer False.
 
         Your answer should be in the format:
@@ -278,6 +246,8 @@ class HarmCausedAndHazardEvent(PromptInput):
         self.hazard = hazard
         self.how_it_harms = how_it_harms
         self.who_it_harms = who_it_harms
+        self.max_tokens = 300
+
         self.pattern_matching_method = 'extract_harm_caused_and_hazard_event'
 
     def generate_prompt_without_few_shot_examples(self):
@@ -482,23 +452,11 @@ class ControlMeasureClassification(PromptInput):
         self.hazard = hazard
         self.how_it_harms = how_it_harms
         self.who_it_harms = who_it_harms
+        self.max_tokens = 400
 
         self.pattern_matching_method = 'check_string_for_prevention_mitigation_or_neither'
         self.candidate_labels = ['prevention', 'mitigation', 'neither', 'both']
         self.labels_indicating_correct_input = ['prevention', 'both']
-    
-    def generate_prompt_without_few_shot_examples(self):
-        # TODO: Decide whether it should be: 2. Thinking step by step and thinking through all possible causes of the hazard event: "<hazard_event>"
-        return f'''Follow these instructions:
-        1. In one sentence, describe the hazard given the hazard event: "<hazard event>" during the
-        activity: '{self.activity}' given the harm caused: "<harm caused>" for {self.who_it_harms}.
-        2. Thinking step by step, explain whether or not '{self.control_measure}' reduces the likelihood that hazard event: "<hazard event>" occurs.
-        If so, it is a prevention measure.
-        3. Thinking step by step, explain whether or not '{self.control_measure}' removes or reduces the harm caused: "<harm caused>" for the '{self.who_it_harms}'.
-        If so, it is a mitigation measure.
-        4. If it is a prevention measure, answer 'Prevention'. If it is a mitigation meausure, answer 'Mitigation'.
-        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a
-        prevention measure and a mitigation measure, answer 'Both'.'''
     
     def generate_prompt(self, hazard_event, harm_caused):
 
@@ -658,11 +616,13 @@ class ControlMeasureClassification(PromptInput):
         Follow these instructions:
         1. In one sentence, describe the hazard given the hazard event: "{hazard_event}" during the
         activity: "{self.activity}" given the harm caused: "{harm_caused}" for {self.who_it_harms}.
-        2. Thinking step by step, explain whether or not "{self.control_measure}" reduces the likelihood that the hazard event: "{hazard_event}" occurs.
+        2. Write the hazard event: "{hazard_event}"
+        3. Write the harm caused: "{harm_caused}"
+        4. Thinking step by step, explain whether or not "{self.control_measure}" reduces the likelihood that the hazard event: "{hazard_event}" occurs.
         If so, it is a prevention measure.
-        3. Thinking step by step, explain whether or not "{self.control_measure}" removes or reduces the harm caused: "{harm_caused}" for the "{self.who_it_harms}".
+        5. Thinking step by step, explain whether or not "{self.control_measure}" removes or reduces the harm caused: "{harm_caused}" for the "{self.who_it_harms}".
         If so, it is a mitigation measure.
-        4. If it is a prevention measure, answer 'Prevention'. If it is a mitigation meausure, answer 'Mitigation'.
+        6. If it is a prevention measure, answer 'Prevention'. If it is a mitigation meausure, answer 'Mitigation'.
         If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a
         prevention measure and a mitigation measure, answer 'Both'.
         </INSTRUCTIONS>
@@ -670,6 +630,8 @@ class ControlMeasureClassification(PromptInput):
         <OUTPUT FORMAT>
         Use the following output format:
         Hazard Description: <your hazard event description>
+        Hazard Event: <hazard event>
+        Harm Caused: <harm caused>
         Prevention Explanation: <your prevention explanation>
         Mitigation Explanation: <your mitigation explanation>
         Answer: <your answer>
@@ -733,11 +695,438 @@ class MitigationPrompt(ControlMeasureClassification):
         if recommendation_type == 'neither':
             return """For the mitigation field, enter a control measure which reduces the harm caused by the "event that leads to harm"."""
 
+class ControlMeasureClassification__ZeroShot_ChainOfThought(PromptInput):
+    def __init__(self, control_measure, activity, hazard, how_it_harms, who_it_harms):
+        super().__init__()
+        self.control_measure = control_measure
+        self.activity = activity
+        self.hazard = hazard
+        self.how_it_harms = how_it_harms
+        self.who_it_harms = who_it_harms
+        self.max_tokens = 400
+
+        self.pattern_matching_method = 'check_string_for_prevention_mitigation_or_neither'
+        self.candidate_labels = ['prevention', 'mitigation', 'neither', 'both']
+        self.labels_indicating_correct_input = ['prevention', 'both']
+    
+    def generate_prompt(self, hazard_event, harm_caused):
+
+        # TODO: Should alter the mitigation explanations - sometimes a mitigation measure is done to prepare for 
+        # the hazard event, not just to reduce the harm caused by the hazard event.
+
+        return f'''
+        <CONTEXT>
+        You are a Risk Assessment expert responsible for giving feedback on Risk Assessment inputs.
+        </CONTEXT>
+
+        <STYLE>
+        Follow the writing style of a secondary school teacher.
+        </STYLE>
+
+        <TONE>
+        Use a formal tone in your outputs.
+        </TONE>
+
+        <AUDIENCE>
+        Your audience is a student who is learning how to write a risk assessment.
+        </AUDIENCE>
+
+        <EXAMPLE OUTPUT>
+        Hazard Description: <description>
+
+        Hazard Event: <hazard event>
+
+        Harm Caused: <harm caused>
+
+        Prevention Explanation: <explanation>
+
+        Mitigation Explanation: <explanation>
+
+        Answer: Mitigation
+        </EXAMPLE OUTPUT>
+
+        <EXAMPLE OUTPUT>
+        Hazard Description: <description>
+
+        Hazard Event: <hazard event>
+
+        Harm Caused: <harm caused>
+
+        Prevention Explanation: <explanation>
+
+        Mitigation Explanation: <explanation>
+
+        Answer: Prevention
+        </EXAMPLE OUTPUT>
+
+        <EXAMPLE OUTPUT>
+        Hazard Description: <description>
+
+        Hazard Event: <hazard event>
+
+        Harm Caused: <harm caused>
+
+        Prevention Explanation: <explanation>
+
+        Mitigation Explanation: <explanation>
+
+        Answer: Both
+        </EXAMPLE OUTPUT>
+
+        <EXAMPLE OUTPUT>
+        Hazard Description: <description>
+
+        Hazard Event: <hazard event>
+
+        Harm Caused: <harm caused>
+
+        Prevention Explanation: <explanation>
+
+        Mitigation Explanation: <explanation>
+
+        Answer: Neither
+        </EXAMPLE OUTPUT>
+
+        <INSTRUCTIONS>
+        Follow these instructions:
+        1. In one sentence, describe the hazard given the hazard event: "{hazard_event}" during the
+        activity: "{self.activity}" given the harm caused: "{harm_caused}" for {self.who_it_harms}.
+        2. Write the hazard event: "{hazard_event}"
+        3. Write the harm caused: "{harm_caused}"
+        4. Thinking step by step, explain whether or not "{self.control_measure}" reduces the likelihood that the hazard event: "{hazard_event}" occurs.
+        If so, it is a prevention measure.
+        5. Thinking step by step, explain whether or not "{self.control_measure}" removes or reduces the harm caused: "{harm_caused}" for the "{self.who_it_harms}".
+        If so, it is a mitigation measure.
+        6. If it is a prevention measure, answer 'Prevention'. If it is a mitigation meausure, answer 'Mitigation'.
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a
+        prevention measure and a mitigation measure, answer 'Both'.
+        </INSTRUCTIONS>
+
+        <OUTPUT FORMAT>
+        Use the following output format:
+        Hazard Description: <your hazard event description>
+        Hazard Event: <hazard event>
+        Harm Caused: <harm caused>
+        Prevention Explanation: <your prevention explanation>
+        Mitigation Explanation: <your mitigation explanation>
+        Answer: <Prevention OR Mitigation OR Both OR Neither>
+        </OUTPUT FORMAT>
+        
+        <OUTPUT>
+        Hazard Description: '''
+    
+class ControlMeasureClassification__ZeroShot_NoChainOfThought(PromptInput):
+    def __init__(self, control_measure, activity, hazard, how_it_harms, who_it_harms):
+        super().__init__()
+        self.control_measure = control_measure
+        self.activity = activity
+        self.hazard = hazard
+        self.how_it_harms = how_it_harms
+        self.who_it_harms = who_it_harms
+        self.max_tokens = 400
+
+        self.pattern_matching_method = 'check_string_for_prevention_mitigation_or_neither'
+        self.candidate_labels = ['prevention', 'mitigation', 'neither', 'both']
+        self.labels_indicating_correct_input = ['prevention', 'both']
+    
+    def generate_prompt(self, hazard_event, harm_caused):
+
+        # TODO: Should alter the mitigation explanations - sometimes a mitigation measure is done to prepare for 
+        # the hazard event, not just to reduce the harm caused by the hazard event.
+
+        return f'''
+        <CONTEXT>
+        You are a Risk Assessment expert responsible for giving feedback on Risk Assessment inputs.
+        </CONTEXT>
+
+        <STYLE>
+        Follow the writing style of a secondary school teacher.
+        </STYLE>
+
+        <TONE>
+        Use a formal tone in your outputs.
+        </TONE>
+
+        <AUDIENCE>
+        Your audience is a student who is learning how to write a risk assessment.
+        </AUDIENCE>
+
+        <EXAMPLE OUTPUT>
+        Hazard Description: <description>
+
+        Hazard Event: <hazard event>
+
+        Harm Caused: <harm caused>
+
+        Prevention Explanation: <explanation>
+
+        Mitigation Explanation: <explanation>
+
+        Answer: Mitigation
+        </EXAMPLE OUTPUT>
+
+        <EXAMPLE OUTPUT>
+        Hazard Description: <description>
+
+        Hazard Event: <hazard event>
+
+        Harm Caused: <harm caused>
+
+        Prevention Explanation: <explanation>
+
+        Mitigation Explanation: <explanation>
+
+        Answer: Prevention
+        </EXAMPLE OUTPUT>
+
+        <EXAMPLE OUTPUT>
+        Hazard Description: <description>
+
+        Hazard Event: <hazard event>
+
+        Harm Caused: <harm caused>
+
+        Prevention Explanation: <explanation>
+
+        Mitigation Explanation: <explanation>
+
+        Answer: Both
+        </EXAMPLE OUTPUT>
+
+        <EXAMPLE OUTPUT>
+        Hazard Description: <description>
+
+        Hazard Event: <hazard event>
+
+        Harm Caused: <harm caused>
+
+        Prevention Explanation: <explanation>
+
+        Mitigation Explanation: <explanation>
+
+        Answer: Neither
+        </EXAMPLE OUTPUT>
+
+        <INSTRUCTIONS>
+        Follow these instructions:
+        1. In one sentence, describe the hazard given the hazard event: "{hazard_event}" during the
+        activity: "{self.activity}" given the harm caused: "{harm_caused}" for {self.who_it_harms}.
+        2. Write the hazard event: "{hazard_event}"
+        3. Write the harm caused: "{harm_caused}"
+        4. State whether "{self.control_measure}" reduces the likelihood that the hazard event: "{hazard_event}" occurs.
+        If so, it is a prevention measure.
+        5. State whether or not "{self.control_measure}" removes or reduces the harm caused: "{harm_caused}" for the "{self.who_it_harms}".
+        If so, it is a mitigation measure.
+        6. If it is a prevention measure, answer 'Prevention'. If it is a mitigation meausure, answer 'Mitigation'.
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a
+        prevention measure and a mitigation measure, answer 'Both'.
+        </INSTRUCTIONS>
+
+        <OUTPUT FORMAT>
+        Use the following output format:
+        Hazard Description: <your hazard event description>
+        Hazard Event: <hazard event>
+        Harm Caused: <harm caused>
+        Prevention Explanation: <your prevention explanation>
+        Mitigation Explanation: <your mitigation explanation>
+        Answer: <your_answer>
+        </OUTPUT FORMAT>
+        
+        <OUTPUT>
+        Hazard Description: '''
+    
+class ControlMeasureClassification__FewShot_NoChainOfThought(PromptInput):
+    def __init__(self, control_measure, activity, hazard, how_it_harms, who_it_harms):
+        super().__init__()
+        self.control_measure = control_measure
+        self.activity = activity
+        self.hazard = hazard
+        self.how_it_harms = how_it_harms
+        self.who_it_harms = who_it_harms
+        self.max_tokens = 400
+
+        self.pattern_matching_method = 'check_string_for_prevention_mitigation_or_neither'
+        self.candidate_labels = ['prevention', 'mitigation', 'neither', 'both']
+        self.labels_indicating_correct_input = ['prevention', 'both']
+    
+    def generate_prompt(self, hazard_event, harm_caused):
+
+        # TODO: Should alter the mitigation explanations - sometimes a mitigation measure is done to prepare for 
+        # the hazard event, not just to reduce the harm caused by the hazard event.
+
+        all_few_shot_examples = """
+        <EXAMPLE INSTRUCTIONS>
+        1. In one sentence, describe the hazard given the hazard event: "Ink spillage" during the
+        activity: 'Fluids laboratory' given the harm caused: "Serious eye damage" for Students.
+        2. Write the Hazard Event: "Ink spillage"
+        3. Write the Harm Caused: "Serious eye damage".
+        4. State whether or not 'Cleaning the eyes out with water' reduces the likelihood that the hazard event: "Ink spillage" occurs.
+        If so, it is a prevention measure.
+        5. State whether or not 'Cleaning the eyes out with water' removes or reduces the harm caused: "Serious eye damage" for the 'Students'.
+        If so, it is a mitigation measure.
+        6. If it is a prevention measure, answer 'Prevention'. If it is a mitigation meausure, answer 'Mitigation'.
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a
+        prevention measure and a mitigation measure, answer 'Both'.
+        </EXAMPLE INSTRUCTIONS>
+
+        <EXAMPLE OUTPUT>
+        Hazard Description: During a fluids laboratory, ink spillage on a student's face causes serious eye damage.
+
+        Prevention Statement:
+        - Cleaning the eyes with water does not reduce the likelihood of ink spillage on a student's face.
+        - Therefore, cleaning the eyes with water is not a prevention measure.
+
+        Mitigation Statement:
+        - Cleaning the eyes with water can reduce the severity of the eye damage caused by an ink spillage on a student's face.
+        - Therefore, cleaning the eyes with water is a mitigation measure.
+
+        Answer: Mitigation
+        </EXAMPLE OUTPUT>
+
+        <EXAMPLE INSTRUCTIONS>
+        1. In one sentence, describe the hazard given the hazard event: "Student slips on water" during the
+        activity: 'Fluids laboratory' given the harm caused: "Injury caused by students slipping" for Students.
+        2. Write the Hazard Event: "Student slips on water"
+        3. Write the Harm Caused: "Injury caused by students slipping".
+        4. State whether or not 'Keeping the water tank stationary when it's full' reduces the likelihood that hazard event: "Student slips on water" occurs.
+        If so, it is a prevention measure.
+        5. State whether or not 'Keeping the water tank stationary when it's full' removes or reduces the harm caused: "Injury caused by students slipping" for the 'Students'.
+        If so, it is a mitigation measure.
+        6. If it is a prevention measure, answer 'Prevention'. If it is a mitigation meausure, answer 'Mitigation'.
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a
+        prevention measure and a mitigation measure, answer 'Both'.
+        </EXAMPLE INSTRUCTIONS>
+
+        <EXAMPLE OUTPUT>
+        Hazard Description: During a fluids laboratory, water spills on the floor, causing students to slip and suffer injuries
+        Hazard Event: Student slips on water
+        Harm Caused: Injury caused by students slipping
+
+        Prevention Explanation:
+        - Keeping the water tank stationary when it's full reduces the likelihood of students slipping on the wet floor.
+        - Therefore, keeping the water tank stationary when it's full is a prevention measure.
+
+        Mitigation Explanation:
+        - Keeping the water tank stationary when it's full does not remove or reduce the harm caused by the "Injury caused by students slipping". 
+        - Therefore, keeping the water tank stationary when it's full is not a mitigation measure.
+
+        Answer: Prevention
+        </EXAMPLE OUTPUT>
+
+        <EXAMPLE INSTRUCTIONS>
+        1. In one sentence, describe the hazard given the hazard event: "Car crashes into the cyclist" during the
+        activity: 'Cycle commuting' given the harm caused: "Head injury" for Cyclist.
+        2. Write the Hazard Event: "Car crashes into the cyclist"
+        3. Write the Harm Caused: "Head injury".
+        4. State whether or not 'Wear a helmet' reduces the likelihood that hazard event: "Car crashes into the cyclist" occurs.
+        If so, it is a prevention measure.
+        5. State whether or not 'Wear a helmet' removes or reduces the harm caused: "Head injury" for the 'Cyclist'.
+        If so, it is a mitigation measure.
+        6. If it is a prevention measure, answer 'Prevention'. If it is a mitigation meausure, answer 'Mitigation'.   
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a
+        prevention measure and a mitigation measure, answer 'Both'.
+        </EXAMPLE INSTRUCTIONS>
+
+        <EXAMPLE OUTPUT>
+        Hazard Description: A cyclist commuting to work gets hit by a car, resulting in a head injury.
+        Hazard Event: Car crashes into the cyclist
+        Harm Caused: Head injury
+
+        Prevention Explanation: 
+        - Wearing a helmet does not reduce likelihood of a cyclist getting hit by a car.
+        - Therefore, wearing a helmet is not a prevention measure.
+        
+        Mitigation Explanation: 
+        - Wearing a helmet can lessen the severity of a head injury caused by a cyclist getting hit by a car.
+        - Therefore, wearing a helmet is a mitigation measure.
+        
+        Answer: Mitigation
+        </EXAMPLE OUTPUT>
+
+        <EXAMPLE INSTRUCTIONS>
+        1. In one sentence, describe the hazard given the hazard event: "Zip tie projectile hits audience member" during the
+        activity: 'Fluids laboratory' given the harm caused: "Impact injury" for Students.
+        2. Write the Hazard Event: "Zip tie projectile hits audience member"
+        3. Write the Harm Caused: "Impact injury".
+        4. State whether or not 'Keeping hand around zip tie when cutting to stop it from flying' reduces the likelihood that hazard event: "Zip tie projectile hits audience member" occurs.
+        If so, it is a prevention measure.
+        5. State whether or not 'Keeping hand around zip tie when cutting to stop it from flying' removes or reduces the harm caused: "Impact injury" for the 'Students'.
+        If so, it is a mitigation measure.
+        6. If it is a prevention measure, answer 'Prevention'. If it is a mitigation meausure, answer 'Mitigation'.
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a
+        prevention measure and a mitigation measure, answer 'Both'.
+        </EXAMPLE INSTRUCTIONS>
+
+        <EXAMPLE OUTPUT>
+        Hazard Description: During a fluids laboratory, a cut zip tie flies and hits a student audience member, causing an impact injury.
+        Hazard Event: Zip tie projectile hits audience member
+        Harm Caused: Impact injury
+
+        Prevention Explanation: 
+        - Keeping a hand around the zip tie while cutting it can reduce the likelihood of the zip tie flying and hitting an audience member.
+        - Therefore, keeping a hand around the zip tie when cutting it is a prevention measure.
+        
+        Mitigation Explanation: 
+        - If a cut zip tie were to fly and hit a student, keeping a hand around it during cutting would not reduce the severity of the "Impact injury".
+        - Therefore, keeping a hand around the zip tie when cutting is not a mitigation measure.
+        
+        Answer: Prevention
+        </EXAMPLE OUTPUT>
+        """
+
+        return f'''
+        <CONTEXT>
+        You are a Risk Assessment expert responsible for giving feedback on Risk Assessment inputs.
+        </CONTEXT>
+
+        <STYLE>
+        Follow the writing style of a secondary school teacher.
+        </STYLE>
+
+        <TONE>
+        Use a formal tone in your outputs.
+        </TONE>
+
+        <AUDIENCE>
+        Your audience is a student who is learning how to write a risk assessment.
+        </AUDIENCE>
+
+        {all_few_shot_examples}
+
+        <INSTRUCTIONS>
+        Follow these instructions:
+        1. In one sentence, describe the hazard given the hazard event: "{hazard_event}" during the
+        activity: "{self.activity}" given the harm caused: "{harm_caused}" for {self.who_it_harms}.
+        2. Write the hazard event: "{hazard_event}"
+        3. Write the harm caused: "{harm_caused}"
+        4. State whether or not "{self.control_measure}" reduces the likelihood that the hazard event: "{hazard_event}" occurs.
+        If so, it is a prevention measure.
+        5. State whether or not "{self.control_measure}" removes or reduces the harm caused: "{harm_caused}" for the "{self.who_it_harms}".
+        If so, it is a mitigation measure.
+        6. If it is a prevention measure, answer 'Prevention'. If it is a mitigation meausure, answer 'Mitigation'.
+        If it is neither a prevention measure nor a mitigation measure, answer 'Neither'. If it is both a
+        prevention measure and a mitigation measure, answer 'Both'.
+        </INSTRUCTIONS>
+
+        <OUTPUT FORMAT>
+        Use the following output format:
+        Hazard Description: <your hazard event description>
+        Hazard Event: <hazard event>
+        Harm Caused: <harm caused>
+        Prevention Statement: <your prevention statement>
+        Mitigation Statement: <your mitigation statement>
+        Answer: <your answer>
+        </OUTPUT FORMAT>
+        
+        <OUTPUT>
+        Hazard Description: '''
+
 class SummarizeControlMeasureFeedback(PromptInput):
     def __init__(self):
 
         self.candidate_labels = [True, False]
         self.pattern_matching_method = 'always_return_true'
+        self.max_tokens = 300
 
     def get_context_style_tone_audience(self):
         return """<CONTEXT>

@@ -41,6 +41,7 @@ class Params(TypedDict):
     is_feedback_text: bool
     is_risk_matrix: bool
     is_risk_assessment: bool
+    LLM: str
 
 def provide_feedback_on_risk_matrix(response):
         risk_matrix = np.array(response)
@@ -249,6 +250,8 @@ def evaluation_function(response: Any, answer: Any, params: Params) -> Result:
     if params["is_risk_assessment"] == True:
         activity, hazard, how_it_harms, who_it_harms, uncontrolled_likelihood, uncontrolled_severity, uncontrolled_risk, prevention, mitigation, controlled_likelihood, controlled_severity, controlled_risk = np.array(response).flatten()
 
+        LLM_name = params["LLM"]
+        LLM = LLM_dictionary[LLM_name]
         # TODO: Do we need a risk domain?
         RA = RiskAssessment(activity=activity, hazard=hazard, who_it_harms=who_it_harms, how_it_harms=how_it_harms,
                             uncontrolled_likelihood=uncontrolled_likelihood, uncontrolled_severity=uncontrolled_severity,
@@ -269,9 +272,6 @@ def evaluation_function(response: Any, answer: Any, params: Params) -> Result:
             return Result(is_correct=False,
                         feedback=f'''\n\n\n\n\n # Feedback:\n\n\n\n\n
                                     \n\n\n\n\n## {likelihood_severity_risk_feedback_message}\n\n\n\n\n''')
-        
-        # LLM = ClaudeSonnetLLM(system_message='', temperature=0.1, max_tokens=200)
-        LLM = OpenAILLM(temperature=0.1, max_tokens=400)
 
         feedback_for_incorrect_answers = '\n\n\n\n# Feedback for Incorrect Answers\n\n\n\n'
         feedback_for_correct_answers = '\n\n\n\n# Feedback for Correct Answers\n\n\n\n'
@@ -287,55 +287,54 @@ def evaluation_function(response: Any, answer: Any, params: Params) -> Result:
         
         for prompt_input_object in first_2_prompt_input_objects:
             if is_everything_correct == True:
-                prompt_output, pattern = RA.get_prompt_output_and_pattern_matched(prompt_input_object, LLM)
+                prompt_output, pattern = RA.get_prompt_output_and_pattern_matched(prompt_input_object=prompt_input_object, LLM_caller=LLM)
                 shortform_feedback = RA.get_shortform_feedback_from_regex_match(prompt_input_object, pattern)
 
                 field = prompt_input_object.get_field_checked()
-                
-                feedback_header_to_add = f''' 
-                \n\n\n## Feedback for Input: {field}\n\n\n
-                '''
 
                 if pattern not in prompt_input_object.labels_indicating_correct_input:
-                    feedback_to_add = f'''
+                    feedback_header = f''' 
+                    \n\n\n## Feedback for Input: {field}\n\n\n
+                    '''
+                    
+                    feedback = f'''
                     \n\n\n\n#### Feedback: {shortform_feedback}\n\n\n\n'''
 
                     longform_feedback = prompt_input_object.get_longform_feedback(prompt_output=prompt_output)
                     
                     if longform_feedback != '':
-                        feedback_to_add += f'''\n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n'''
+                        feedback += f'''\n\n\n\n#### Explanation: {longform_feedback}\n\n\n\n'''
                     
                     is_everything_correct = False
                     recommendation = prompt_input_object.get_recommendation()
 
-                    feedback_to_add += f'''\n\n\n\n#### Recommendation: {recommendation}'''
+                    feedback += f'''\n\n\n\n#### Recommendation: {recommendation}'''
 
-                    feedback_for_incorrect_answers += feedback_header_to_add
-                    feedback_for_incorrect_answers += feedback_to_add
+                    feedback_for_incorrect_answers += feedback_header
+                    feedback_for_incorrect_answers += feedback
 
                     return Result(is_correct=is_everything_correct, feedback=feedback_for_incorrect_answers)
 
         # PREVENTION CHECKS
         no_information_provided_for_prevention_prompt_input = RA.get_no_information_provided_for_prevention_input()
-        no_information_provided_for_prevention_prompt_output, no_information_provided_for_prevention_pattern = RA.get_prompt_output_and_pattern_matched(no_information_provided_for_prevention_prompt_input, LLM)
+        no_information_provided_for_prevention_prompt_output, no_information_provided_for_prevention_pattern = RA.get_prompt_output_and_pattern_matched(prompt_input_object=no_information_provided_for_prevention_prompt_input, LLM_caller=LLM)
 
-        if no_information_provided_for_prevention_pattern == 'no information provided':
+        if no_information_provided_for_prevention_pattern == 'no information provided' or RA.prevention == '':
             fields_for_which_no_information_provided.append('Prevention')
         
         else:
             # TODO: Avoid duplication of the following code:
-            LLM = OpenAILLM(temperature=0.1, max_tokens=400)
-
             harm_caused_and_hazard_event_prompt_input = RA.get_harm_caused_and_hazard_event_input()
-            harm_caused_and_hazard_event_prompt_output, harm_caused_and_hazard_event_pattern = RA.get_prompt_output_and_pattern_matched(harm_caused_and_hazard_event_prompt_input, LLM)
+            harm_caused_and_hazard_event_prompt_output, harm_caused_and_hazard_event_pattern = RA.get_prompt_output_and_pattern_matched(prompt_input_object=harm_caused_and_hazard_event_prompt_input, LLM_caller=LLM)
 
             hazard_event = harm_caused_and_hazard_event_pattern.hazard_event
             harm_caused = harm_caused_and_hazard_event_pattern.harm_caused
 
-            # LLM = MistralLLM(model='open-mixtral-8x7b', temperature=0.1, max_tokens=300)
-            LLM = ClaudeSonnetLLM(system_message='', temperature=0.1, max_tokens=400)
             control_measure_prompt_with_prevention_input = RA.get_control_measure_prompt_with_prevention_input()
-            control_measure_prompt_with_prevention_output, control_measure_prompt_with_prevention_pattern = RA.get_prompt_output_and_pattern_matched(control_measure_prompt_with_prevention_input, LLM, harm_caused=harm_caused, hazard_event=hazard_event)
+            control_measure_prompt_with_prevention_output, control_measure_prompt_with_prevention_pattern = RA.get_prompt_output_and_pattern_matched(prompt_input_object=control_measure_prompt_with_prevention_input, 
+                                                                                                                                                     LLM_caller=LLM,
+                                                                                                                                                     harm_caused=harm_caused, 
+                                                                                                                                                     hazard_event=hazard_event)
 
             feedback_for_correct_answers, feedback_for_incorrect_answers, is_everything_correct = provide_feedback_on_control_measure_input(
                 control_measure_input_field='prevention',
@@ -351,26 +350,25 @@ def evaluation_function(response: Any, answer: Any, params: Params) -> Result:
 
         # MITIGATION CHECKS
         no_information_provided_for_mitigation_prompt_input = RA.get_no_information_provided_for_mitigation_input()
-        no_information_provided_for_mitigation_prompt_output, no_information_provided_for_mitigation_pattern = RA.get_prompt_output_and_pattern_matched(no_information_provided_for_mitigation_prompt_input, LLM)
+        no_information_provided_for_mitigation_prompt_output, no_information_provided_for_mitigation_pattern = RA.get_prompt_output_and_pattern_matched(prompt_input_object=no_information_provided_for_mitigation_prompt_input, LLM_caller=LLM)
 
-        if no_information_provided_for_mitigation_pattern == 'no information provided':
+        if no_information_provided_for_mitigation_pattern == 'no information provided' or RA.mitigation == '':
             fields_for_which_no_information_provided.append('Mitigation')
         else:
             # If harm_caused and hazard_event have not already been extracted.
             if no_information_provided_for_prevention_pattern == 'no information provided':
-                # LLM = OpenAILLM(temperature=0.1, max_tokens=400)
 
                 harm_caused_and_hazard_event_prompt_input = RA.get_harm_caused_and_hazard_event_input()
-                harm_caused_and_hazard_event_prompt_output, harm_caused_and_hazard_event_pattern = RA.get_prompt_output_and_pattern_matched(harm_caused_and_hazard_event_prompt_input, LLM)
+                harm_caused_and_hazard_event_prompt_output, harm_caused_and_hazard_event_pattern = RA.get_prompt_output_and_pattern_matched(prompt_input_object=harm_caused_and_hazard_event_prompt_input, LLM_caller=LLM)
 
                 hazard_event = harm_caused_and_hazard_event_pattern.hazard_event
                 harm_caused = harm_caused_and_hazard_event_pattern.harm_caused
             
-            # LLM = MistralLLM(model='open-mixtral-8x7b', temperature=0.1, max_tokens=300)
-            LLM = ClaudeSonnetLLM(system_message='', temperature=0.1, max_tokens=400)
-            
             control_measure_prompt_with_mitigation_input = RA.get_control_measure_prompt_with_mitigation_input()
-            control_measure_prompt_with_mitigation_output, control_measure_prompt_with_mitigation_pattern = RA.get_prompt_output_and_pattern_matched(control_measure_prompt_with_mitigation_input, LLM, harm_caused=harm_caused, hazard_event=hazard_event)
+            control_measure_prompt_with_mitigation_output, control_measure_prompt_with_mitigation_pattern = RA.get_prompt_output_and_pattern_matched(prompt_input_object=control_measure_prompt_with_mitigation_input, 
+                                                                                                                                                     LLM_caller=LLM, 
+                                                                                                                                                     harm_caused=harm_caused, 
+                                                                                                                                                     hazard_event=hazard_event)
             
             feedback_for_correct_answers, feedback_for_incorrect_answers, is_everything_correct = provide_feedback_on_control_measure_input(
                 control_measure_input_field='mitigation',
@@ -396,14 +394,20 @@ def evaluation_function(response: Any, answer: Any, params: Params) -> Result:
             hazard_event_and_harm_caused_inferred_message = f'''## The following were inferred from your answers: \n\n\n\n\n
             \n\n\n\n\n### Event that leads to harm: "{hazard_event}"\n\n\n\n\n
             \n\n\n\n\n### Harm caused to '{RA.who_it_harms}': "{harm_caused}".\n\n\n\n
-            \n\n\n\n\n#### If they are incorrect, please make these more explicit in the "Hazard" and "How it harms" fields.\n\n\n\n\n'''
+            \n\n\n\n\n### If they are incorrect, please make these more explicit in the "Hazard" and "How it harms" fields.\n\n\n\n\n'''
         else:
             hazard_event_and_harm_caused_inferred_message = ''
         
         feedback_for_correct_answers += f'''
         \n\n\n\n### There are no errors in your likelihood, severity, and risk values.\n\n\n\n'''
 
-        return Result(is_correct=is_everything_correct, feedback=hazard_event_and_harm_caused_inferred_message + '\n\n\n\n\n' + feedback_for_incorrect_answers + '\n\n\n\n\n' + feedback_for_correct_answers + '\n\n\n\n\n' + no_information_provided_message)
+        feedback=f'''{hazard_event_and_harm_caused_inferred_message} \n\n\n\n\n
+        {feedback_for_incorrect_answers} \n\n\n\n\n
+        {feedback_for_correct_answers} \n\n\n\n\n
+        {no_information_provided_message}'''
+
+        return Result(is_correct=is_everything_correct, feedback=feedback)
+
 st.title('Risk Assessment Exercise')
 # st.subheader('Learning Objectives')
 # 'Before completing this exercise, please read the following learning objectives:'
@@ -416,19 +420,22 @@ st.title('Risk Assessment Exercise')
 #                 4. Understand the difference between an uncontrolled risk and a controlled risk
 #                 5. Fill out a Risk Assessment for any activity''')
 
-st.subheader('Overview: This exercise gives feedback on Risk Assessments.')
+# st.subheader('Overview: This exercise gives feedback on Risk Assessments.')
 repo_link = "https://github.com/lambda-feedback/riskAssessment"
 # st.markdown(f'You can find the code repository for this exercise [here]({repo_link}).')
 
-st.subheader('If you complete this exercise and provide feedback, you will gain access to an exclusive YouTube video which highlights the risks of provoking wild animals :eyes:')
+st.subheader('''This exercise gives feedback on Risk Assessments. It is new and part of an FYP.''')
+st.subheader('''Please can you give us some feedback. NOTE: You should only include one example in each field, e.g. for the 'Mitigation' field, only list one mitigation, e.g. "Wear a lab coat".''')
 
-st.title('Instructions')
-st.markdown('''
-            1. Think of an activity that involves risk, e.g. combat sports, firefighting, parkour, skiing, bungee jumping, volcano exploration, free diving etc.
-            2. In the "Helpful Resources" below, read the "Input field definitions" and the "Example Risk Assessment".
-            3. Fill out the "Risk Assessment Fields" exercise.
-                - **NOTE: You should only include one example in each field, e.g. for the 'Mitigation' field, only list one mitigation, e.g. "Wear a helmet"**
-            4. When you are finished, you can give feedback to me by filling out the feedback form at the bottom. Many Thanks, Charlie''')
+# st.subheader('If you complete this exercise and provide feedback, you will gain access to an exclusive YouTube video which highlights the risks of provoking wild animals :eyes:')
+
+# st.title('Instructions')
+# st.markdown('''
+#             1. Think of an activity that involves risk, e.g. combat sports, firefighting, parkour, skiing, bungee jumping, volcano exploration, free diving etc.
+#             2. In the "Helpful Resources" below, read the "Input field definitions" and the "Example Risk Assessment".
+#             3. Fill out the "Risk Assessment Fields" exercise.
+#                 - **NOTE: You should only include one example in each field, e.g. for the 'Mitigation' field, only list one mitigation, e.g. "Wear a helmet"**
+#             4. When you are finished, you can give feedback to me by filling out the feedback form at the bottom. Many Thanks, Charlie''')
 # with st.expander('See Additional Instructions'):
 #     st.markdown('''
 #                 1. Fill out the "Risk Assessment Fields" exercise below. 
@@ -440,52 +447,52 @@ st.markdown('''
 #                     - If you got everything correct, you can click the "See full feedback" dropdown to see why you are correct.
 #                 5. When you are finished, you can give feedback to me by filling out the feedback form at the bottom. Many Thanks, Charlie''')
     
-st.title('Helpful Resources')
+# st.title('Helpful Resources')
 
-st.subheader('Input Field Definitions')
-'Please read the definitions of the input fields below:'
-with st.expander('Click to see Input Field Definitions'):
-    definitions = {
-        'Field': ['Activity', 'Hazard', 'How it harms', 'Who it harms', 'Prevention', 'Mitigation', 'Likelihood', 'Severity', 'Risk', 'Uncontrolled Likelihood', 'Uncontrolled Severity', 'Uncontrolled Risk', 'Controlled Likelihood', 'Controlled Severity', 'Controlled Risk'],
-        'Definition': [
-            'Activity involving the hazard',
-            'Dangerous phenomenon, object, human activity or condition.',
-            'One-sentence explanation of how the hazard can cause harm and the harm caused.',
-            'Individuals or groups at risk of harm from the hazard.',
-            'Action which reduces the likelihood of the hazard causing harm.',
-            'Action which reduces the harm caused by the hazard.',
-            'The probability that the hazard causes harm. Ranges from 1-5.',
-            'The degree of harm that the hazard can cause. Ranges from 1-5.',
-            'Calculated using Risk = Likelihood x Severity.',
-            'Likelihood before prevention measure applied. Ranges from 1-5.',
-            'Severity before mitigation measure applied. Ranges from 1-5.',
-            'Risk before prevention/mitigation applied.',
-            'Likelihood after prevention measure applied. Ranges from 1-5.',
-            'Severity after mitigation measure applied. Ranges from 1-5.',
-            'Risk after prevention/mitigation applied.',
-        ],
-        'Input format': ['Text', 'Text', 'Text', 'Text', 'Text', 'Text', 'Integer', 'Integer', 'Integer', 'Integer', 'Integer', 'Integer', 'Integer', 'Integer', 'Integer']
-    }
+# st.subheader('Input Field Definitions')
+# 'Please read the definitions of the input fields below:'
+# with st.expander('Click to see Input Field Definitions'):
+#     definitions = {
+#         'Field': ['Activity', 'Hazard', 'How it harms', 'Who it harms', 'Prevention', 'Mitigation', 'Likelihood', 'Severity', 'Risk', 'Uncontrolled Likelihood', 'Uncontrolled Severity', 'Uncontrolled Risk', 'Controlled Likelihood', 'Controlled Severity', 'Controlled Risk'],
+#         'Definition': [
+#             'Activity involving the hazard',
+#             'Dangerous phenomenon, object, human activity or condition.',
+#             'One-sentence explanation of how the hazard can cause harm and the harm caused.',
+#             'Individuals or groups at risk of harm from the hazard.',
+#             'Action which reduces the likelihood of the hazard causing harm.',
+#             'Action which reduces the harm caused by the hazard.',
+#             'The probability that the hazard causes harm. Ranges from 1-5.',
+#             'The degree of harm that the hazard can cause. Ranges from 1-5.',
+#             'Calculated using Risk = Likelihood x Severity.',
+#             'Likelihood before prevention measure applied. Ranges from 1-5.',
+#             'Severity before mitigation measure applied. Ranges from 1-5.',
+#             'Risk before prevention/mitigation applied.',
+#             'Likelihood after prevention measure applied. Ranges from 1-5.',
+#             'Severity after mitigation measure applied. Ranges from 1-5.',
+#             'Risk after prevention/mitigation applied.',
+#         ],
+#         'Input format': ['Text', 'Text', 'Text', 'Text', 'Text', 'Text', 'Integer', 'Integer', 'Integer', 'Integer', 'Integer', 'Integer', 'Integer', 'Integer', 'Integer']
+#     }
 
-    # Create DataFrame from the dictionary
-    df_markdown = pd.DataFrame(definitions)
+#     # Create DataFrame from the dictionary
+#     df_markdown = pd.DataFrame(definitions)
 
-    # Display DataFrame without index column in Streamlit
-    st.write(df_markdown)
+#     # Display DataFrame without index column in Streamlit
+#     st.write(df_markdown)
 
-st.subheader('Example Risk Assessment')
-'Please look at the example risk assessment below:'
-with st.expander('Click to see Example Risk Assessment'):
-    example_risk_assessment = {
-        'Field': ['Activity', 'Hazard', 'How it harms', 'Who it harms', 'Uncontrolled Likelihood', 
-                'Uncontrolled Severity', 'Uncontrolled Risk', 'Prevention', 'Mitigation', 
-                'Controlled Likelihood', 'Controlled Severity', 'Controlled Risk'],
-        'Example': ['Cycling', 'Reckless drivers', 'Collision with cars causes impact injury', 'Cyclists', 1, 
-                    4, 4 , 'Use high viz and lights', 'Wear a helmet', 1, 2, 2]
-    }
+# st.subheader('Example Risk Assessment')
+# 'Please look at the example risk assessment below:'
+# with st.expander('Click to see Example Risk Assessment'):
+#     example_risk_assessment = {
+#         'Field': ['Activity', 'Hazard', 'How it harms', 'Who it harms', 'Uncontrolled Likelihood', 
+#                 'Uncontrolled Severity', 'Uncontrolled Risk', 'Prevention', 'Mitigation', 
+#                 'Controlled Likelihood', 'Controlled Severity', 'Controlled Risk'],
+#         'Example': ['Cycling', 'Reckless drivers', 'Collision with cars causes impact injury', 'Cyclists', 1, 
+#                     4, 4 , 'Use high viz and lights', 'Wear a helmet', 1, 2, 2]
+#     }
 
-    df = pd.DataFrame(example_risk_assessment)
-    st.table(df)
+#     df = pd.DataFrame(example_risk_assessment)
+#     st.table(df)
 
 
 st.title('Risk Assessment Fields')
@@ -552,7 +559,7 @@ with st.form('risk_assessment'):
             response = [activity, hazard, how_it_harms, who_it_harms, uncontrolled_likelihood, 
                         uncontrolled_severity, uncontrolled_risk, prevention, mitigation, 
                         controlled_likelihood, controlled_severity, controlled_risk]
-            params: Params = {"is_feedback_text": False, "is_risk_matrix": False, "is_risk_assessment": True}
+            params: Params = {"is_feedback_text": False, "is_risk_matrix": False, "is_risk_assessment": True, "LLM": "Mistral Large"}
 
             result = evaluation_function(response=response, answer='', params=params)
             is_correct = result['is_correct']

@@ -29,6 +29,7 @@ class RiskAssessment:
 
         self.prevention_prompt_expected_class = prevention_prompt_expected_class
         self.mitigation_prompt_expected_class = mitigation_prompt_expected_class
+        self.prevention_and_mitigation_expected_class_combined = f'{prevention_prompt_expected_class}, {mitigation_prompt_expected_class}'
         self.risk_domain = risk_domain
 
         # TODO: Remove these parameters
@@ -48,9 +49,6 @@ class RiskAssessment:
     
     def get_no_information_provided_for_mitigation_input(self):
         return NoInformationProvided(input=self.mitigation)
-    
-    def get_activity_input(self):
-        return Activity(activity=self.activity)
 
     def get_how_it_harms_in_context_input(self):
         return HowItHarmsInContext(how_it_harms=self.how_it_harms,
@@ -86,6 +84,54 @@ class RiskAssessment:
             hazard=self.hazard,
             control_measure=self.mitigation)
     
+    def get_zero_shot_chain_of_thought_control_measure_prompt_with_prevention_input(self):
+        return ControlMeasureClassification__ZeroShot_ChainOfThought(
+            activity=self.activity,
+            who_it_harms=self.who_it_harms,
+            how_it_harms=self.how_it_harms,
+            hazard=self.hazard,
+            control_measure=self.prevention)
+    
+    def get_zero_shot_chain_of_thought_control_measure_prompt_with_mitigation_input(self):
+        return ControlMeasureClassification__ZeroShot_ChainOfThought(
+            activity=self.activity,
+            who_it_harms=self.who_it_harms,
+            how_it_harms=self.how_it_harms,
+            hazard=self.hazard,
+            control_measure=self.mitigation)
+    
+    def get_few_shot_no_chain_of_thought_control_measure_prompt_with_prevention_input(self):
+        return ControlMeasureClassification__FewShot_NoChainOfThought(
+            activity=self.activity,
+            who_it_harms=self.who_it_harms,
+            how_it_harms=self.how_it_harms,
+            hazard=self.hazard,
+            control_measure=self.prevention)
+    
+    def get_few_shot_no_chain_of_thought_control_measure_prompt_with_mitigation_input(self):
+        return ControlMeasureClassification__FewShot_NoChainOfThought(
+            activity=self.activity,
+            who_it_harms=self.who_it_harms,
+            how_it_harms=self.how_it_harms,
+            hazard=self.hazard,
+            control_measure=self.mitigation)
+    
+    def get_zero_shot_no_chain_of_thought_control_measure_prompt_with_prevention_input(self):
+        return ControlMeasureClassification__ZeroShot_NoChainOfThought(
+            activity=self.activity,
+            who_it_harms=self.who_it_harms,
+            how_it_harms=self.how_it_harms,
+            hazard=self.hazard,
+            control_measure=self.prevention)
+    
+    def get_zero_shot_no_chain_of_thought_control_measure_prompt_with_mitigation_input(self):
+        return ControlMeasureClassification__ZeroShot_NoChainOfThought(
+            activity=self.activity,
+            who_it_harms=self.who_it_harms,
+            how_it_harms=self.how_it_harms,
+            hazard=self.hazard,
+            control_measure=self.mitigation)
+    
     def get_feedback_summary_input(self):
         return SummarizeControlMeasureFeedback()
     
@@ -96,6 +142,12 @@ class RiskAssessment:
                 'how_it_harms',
                 'prevention',
                 'mitigation']
+    
+    def get_word_fields_which_cannot_be_empty(self):
+        return ['activity',
+                'hazard',
+                'how_it_harms',
+                'who_it_harms']
     
     def get_integer_fields(self):
         return ['uncontrolled_likelihood',
@@ -109,7 +161,7 @@ class RiskAssessment:
     def get_empty_fields(self):
         empty_fields = []
 
-        for field_name in self.get_word_fields() + self.get_integer_fields():
+        for field_name in self.get_word_fields_which_cannot_be_empty() + self.get_integer_fields():
             if getattr(self, field_name) == '':
                 formatted_field_name = field_name.replace('_', ' ').title()
                 empty_fields.append(formatted_field_name)
@@ -278,7 +330,7 @@ class RiskAssessment:
     def get_prompt_output_and_pattern_matched(self, prompt_input_object: Type[PromptInput], LLM_caller: Type[LLMCaller], **kwargs):
         regex_pattern_matcher = RegexPatternMatcher()
         
-        prompt_output = LLM_caller.get_model_output(prompt_input_object.generate_prompt(**kwargs))
+        prompt_output = LLM_caller.get_model_output(prompt=prompt_input_object.generate_prompt(**kwargs), max_tokens=prompt_input_object.max_tokens)
         print(prompt_output)
         
         pattern_matching_method = getattr(regex_pattern_matcher, prompt_input_object.pattern_matching_method)
@@ -306,6 +358,21 @@ class RiskAssessment:
                 return False
         
         return True
+
+    def convert_risk_assessment_to_evaluation_function_list_input(self):
+        return [self.activity, 
+                self.hazard, 
+                self.how_it_harms, 
+                self.who_it_harms, 
+                self.uncontrolled_likelihood, 
+                self.uncontrolled_severity, 
+                self.uncontrolled_risk, 
+                self.prevention, 
+                self.mitigation, 
+                self.controlled_likelihood, 
+                self.controlled_severity, 
+                self.controlled_risk]
+
 
 class RiskAssessmentWithoutNumberInputs(RiskAssessment):
     def __init__(self, activity, hazard, how_it_harms, who_it_harms,
